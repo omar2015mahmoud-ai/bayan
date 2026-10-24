@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>منصة بيان هاردر</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<style type="text/tailwindcss">
+.btn{@apply px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition}
+.btn-p{@apply px-4 py-2 rounded-xl text-xs font-bold bg-orange-600 hover:bg-orange-500 text-white transition}
+.inp{@apply w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-orange-500}
+.card{@apply bg-slate-900/70 border border-slate-800 rounded-2xl p-5}
+</style>
+<style>body{font-family:Cairo,sans-serif;background:#0b0f19;color:#f3f4f6}.amiri{font-family:Amiri,serif}</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<header class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur border-b border-slate-800">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-900 to-orange-600 flex items-center justify-center text-xl font-extrabold amiri">ب</div>
+      <div><h1 class="font-extrabold text-lg">منصة بيان هاردر</h1><p class="text-[10px] text-slate-400 -mt-1">تأليف وقراءة وترجمة الروايات</p></div>
+    </div>
+    <div id="authBox"></div>
+  </div>
+</header>
+
+<nav class="bg-slate-900/80 border-b border-slate-800 sticky top-16 z-40">
+  <div class="max-w-7xl mx-auto px-4 flex gap-2 overflow-x-auto py-2">
+    <button data-t="studio" onclick="tab('studio')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-pen-nib"></i> استوديو التأليف</button>
+    <button data-t="reader" onclick="tab('reader')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-book-open"></i> قراءة PDF</button>
+    <button data-t="trans" onclick="tab('trans')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-language"></i> الترجمة</button>
+    <button data-t="split" onclick="tab('split')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-scissors"></i> تقسيم PDF</button>
+  </div>
+</nav>
+
+<main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+<!-- STUDIO -->
+<section id="studio" class="sec card space-y-4">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 class="font-bold"><i class="fa-solid fa-feather-pointed text-orange-500"></i> استوديو التأليف</h2>
+    <div class="flex gap-2"><button class="btn" onclick="save(true)"><i class="fa-solid fa-floppy-disk"></i> حفظ</button><button class="btn-p" onclick="exportNovel()"><i class="fa-solid fa-file-pdf"></i> تصدير PDF</button></div>
+  </div>
+  <div class="grid sm:grid-cols-3 gap-3">
+    <input id="nTitle" class="inp" placeholder="اسم الرواية" value="روايتي الخاصة">
+    <input id="nAuthor" class="inp" placeholder="المؤلف" value="كاتب بيان">
+    <input id="nGenre" class="inp" placeholder="التصنيف" value="خيال / دراما">
+  </div>
+  <div class="grid lg:grid-cols-4 gap-4">
+    <div class="space-y-3">
+      <div class="flex items-center justify-between"><b class="text-xs">فهرس الفصول</b><button class="btn-p !py-1" onclick="addCh()">+ فصل</button></div>
+      <ul id="chList" class="space-y-2 max-h-72 overflow-y-auto"></ul>
+      <textarea id="nNotes" rows="4" class="inp resize-none" placeholder="ملاحظات الشخصيات والعالم..."></textarea>
+    </div>
+    <div class="lg:col-span-3 space-y-3">
+      <div class="flex flex-wrap gap-2">
+        <input id="chTitle" class="inp flex-1 !text-orange-400 font-bold" placeholder="عنوان الفصل">
+        <button class="btn" onclick="wrap('«','»','الحوار هنا')">« » حوار</button>
+        <button class="btn" onclick="wrap('\n\n❦ ❦ ❦\n\n','','')">❦ فاصل</button>
+        <button class="btn" onclick="wrap('(',')','أفكار')">(أفكار)</button>
+      </div>
+      <textarea id="chBody" rows="16" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 amiri text-lg leading-relaxed resize-none focus:outline-none focus:border-orange-500/50" placeholder="اكتب روايتك هنا..."></textarea>
+      <div id="stats" class="text-[11px] text-slate-400"></div>
+    </div>
+  </div>
+</section>
+
+<!-- READER -->
+<section id="reader" class="sec hidden space-y-4">
+  <div class="card flex items-center justify-between gap-3">
+    <h2 class="font-bold"><i class="fa-solid fa-file-pdf text-orange-500"></i> قارئ PDF</h2>
+    <input type="file" id="pdfIn" accept="application/pdf" class="hidden" onchange="openPdf(event)">
+    <button class="btn-p" onclick="$('pdfIn').click()"><i class="fa-solid fa-upload"></i> فتح ملف</button>
+  </div>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="card min-h-[420px]">
+      <div class="flex items-center justify-between mb-3"><button class="btn" onclick="chPg(-1)">السابقة</button><b id="pn" class="text-xs text-orange-400">0 / 0</b><button class="btn" onclick="chPg(1)">التالية</button></div>
+      <div class="overflow-auto bg-slate-950 rounded-xl p-2 text-center"><canvas id="cv" class="hidden max-w-full h-auto mx-auto"></canvas><p id="ph" class="text-xs text-slate-500 p-10">لم يُفتح ملف بعد</p></div>
+    </div>
+    <div class="card min-h-[420px] flex flex-col">
+      <div class="flex gap-2 mb-3"><button class="btn" onclick="toTrans()"><i class="fa-solid fa-language"></i> إرسال للترجمة</button><button class="btn-p" onclick="speak($('ptxt').textContent)"><i class="fa-solid fa-volume-high"></i> قراءة صوتية</button><button class="btn" onclick="speechSynthesis.cancel()">إيقاف</button></div>
+      <div id="ptxt" class="flex-1 bg-slate-950 rounded-xl p-4 text-sm leading-relaxed overflow-y-auto max-h-[420px] whitespace-pre-wrap text-slate-300">افتح ملف PDF لاستخراج نص الصفحة هنا</div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSLATE -->
+<section id="trans" class="sec hidden space-y-4">
+  <div class="card flex flex-wrap items-center gap-3">
+    <select id="sl" class="inp !w-auto"><option value="auto">كشف تلقائي</option><option value="en" selected>English</option><option value="ar">العربية</option></select>
+    <i class="fa-solid fa-arrow-left text-slate-500"></i>
+    <select id="tl" class="inp !w-auto"><option value="ar" selected>العربية</option><option value="en">English</option></select>
+    <label class="text-xs flex items-center gap-2 mr-auto"><input type="checkbox" id="rep" checked class="accent-orange-600"> استبدال (الإله ← الحاكم) في الترجمة العربية</label>
+    <input type="file" id="tf" accept=".txt,.pdf" class="hidden" onchange="fileTrans(event)">
+    <button class="btn" onclick="$('tf').click()"><i class="fa-solid fa-folder-open"></i> ترجمة ملف TXT/PDF</button>
+  </div>
+  <div class="grid lg:grid-cols-2 gap-4">
+    <div class="card space-y-3">
+      <textarea id="tin" rows="10" class="inp resize-none text-sm" placeholder="ألصق النص المراد ترجمته..."></textarea>
+      <div class="flex justify-between"><button class="btn" onclick="$('tin').value=''">مسح</button><button id="tbtn" class="btn-p" onclick="translate()"><i class="fa-solid fa-wand-magic-sparkles"></i> بدء الترجمة</button></div>
+    </div>
+    <div class="card space-y-3">
+      <div id="tout" class="bg-slate-950 rounded-xl p-4 text-sm leading-relaxed h-52 overflow-y-auto whitespace-pre-wrap text-slate-300">ستظهر الترجمة هنا...</div>
+      <div class="flex items-center gap-2">
+        <button class="btn" onclick="navigator.clipboard.writeText($('tout').textContent);toast('تم النسخ')">نسخ</button>
+        <button class="btn-p flex-1" onclick="speak($('tout').textContent)"><i class="fa-solid fa-play"></i> قراءة صوتية</button>
+        <button class="btn" onclick="speechSynthesis.cancel()">إيقاف</button>
+        <select id="rate" class="inp !w-auto"><option value="0.8">0.8x</option><option value="1" selected>1x</option><option value="1.2">1.2x</option><option value="1.5">1.5x</option></select>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPLIT -->
+<section id="split" class="sec hidden grid md:grid-cols-2 gap-4">
+  <div class="card space-y-3">
+    <h2 class="font-bold"><i class="fa-solid fa-scissors text-orange-500"></i> استخراج صفحات من PDF</h2>
+    <input type="file" id="spf" accept="application/pdf" class="text-xs w-full">
+    <div class="flex gap-2"><input type="number" id="sa" min="1" class="inp" placeholder="من صفحة"><input type="number" id="sb" min="1" class="inp" placeholder="إلى صفحة"></div>
+    <button class="btn-p w-full" onclick="splitPdf()">استخراج وتنزيل</button>
+  </div>
+  <div class="card space-y-3">
+    <h2 class="font-bold">محرر نصوص سريع</h2>
+    <textarea id="edt" rows="8" class="inp resize-none" placeholder="اكتب أو الصق نصًا ثم صدّره PDF..."></textarea>
+    <button class="btn-p w-full" onclick="exportEditor()"><i class="fa-solid fa-file-export"></i> تصدير PDF</button>
+  </div>
+</section>
+</main>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="fixed inset-0 z-[60] bg-slate-950/80 backdrop-blur flex items-center justify-center p-4 hidden">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 relative">
+    <button onclick="closeAuth()" class="absolute top-4 left-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <h3 class="text-lg font-bold text-center"><i class="fa-solid fa-user-shield text-orange-500"></i> حسابك في بيان</h3>
+    <input id="aEmail" type="email" class="inp !p-3" placeholder="الإيميل" autocomplete="email">
+    <input id="aPass" type="password" class="inp !p-3" placeholder="الرمز السري (6 خانات على الأقل)" autocomplete="current-password">
+    <div class="flex gap-3"><button class="btn-p flex-1" onclick="authDo('in')">دخول</button><button class="btn flex-1" onclick="authDo('up')">حساب جديد</button></div>
+    <button class="text-xs text-slate-400 underline w-full" onclick="resetPw()">نسيت الرمز السري؟</button>
+  </div>
+</div>
+
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 px-5 py-3 rounded-2xl text-xs font-semibold opacity-0 pointer-events-none transition z-[70]"></div>
+
+<script>
+/* ===== الإعدادات: ضع بيانات مشروعك من Supabase (Settings ← API) ===== */
+const SUPABASE_URL = 'https://mkunpzzliewmlcyrolaz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rdW5wenpsaWV3bWxjeXJvbGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3ODUwNTIsImV4cCI6MjEwODM2MTA1Mn0.BKx4pk3ljCFTvsqReulS7VkZDDksSqzlJUWBIyUYqsU';
+/* ================================================================== */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(m, t) {
+  const e = $('toast'); e.textContent = m;
+  e.className = e.className.replace(/ ?(text-rose-400|text-emerald-400)/g, '') + (t === 'err' ? ' text-rose-400' : ' text-emerald-400');
+  e.style.opacity = 1; clearTimeout(e._t); e._t = setTimeout(() => e.style.opacity = 0, 3200);
+}
+function dl(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1500); }
+function tab(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.toggle('hidden', s.id !== id));
+  document.querySelectorAll('[data-t]').forEach(b => {
+    const on = b.dataset.t === id;
+    b.classList.toggle('bg-orange-600', on); b.classList.toggle('text-white', on); b.classList.toggle('text-slate-400', !on);
+  });
+}
+
+/* ---------- الحساب (Supabase Auth) ---------- */
+let user = null;
+function openAuth() { $('authModal').classList.remove('hidden'); }
+function closeAuth() { $('authModal').classList.add('hidden'); }
+function renderAuth() {
+  const b = $('authBox'); b.innerHTML = '';
+  if (user) {
+    const s = document.createElement('span'); s.className = 'text-xs font-bold text-orange-400 ml-2'; s.textContent = user.email;
+    const o = document.createElement('button'); o.className = 'btn'; o.textContent = 'خروج'; o.onclick = logout;
+    b.append(s, o);
+  } else {
+    const i = document.createElement('button'); i.className = 'btn-p'; i.innerHTML = '<i class="fa-solid fa-user-lock"></i> دخول / حساب جديد'; i.onclick = openAuth;
+    b.append(i);
+  }
+}
+async function authDo(mode) {
+  const email = $('aEmail').value.trim(), password = $('aPass').value;
+  if (!email || password.length < 6) return toast('أدخل إيميلًا صحيحًا ورمزًا من 6 خانات على الأقل', 'err');
+  const r = mode === 'in' ? await db.auth.signInWithPassword({ email, password }) : await db.auth.signUp({ email, password });
+  if (r.error) return toast(r.error.message, 'err');
+  closeAuth();
+  if (mode === 'up' && !r.data.session) toast('أرسلنا رابط تأكيد إلى إيميلك، افتحه ثم سجّل دخولك');
+  $('aPass').value = '';
+}
+async function resetPw() {
+  const email = $('aEmail').value.trim();
+  if (!email) return toast('اكتب إيميلك أولًا', 'err');
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin });
+  toast(error ? error.message : 'أرسلنا رابط استعادة الرمز إلى إيميلك', error ? 'err' : 'ok');
+}
+async function logout() {
+  await save();
+  await db.auth.signOut();
+  localStorage.removeItem('bayan_guest');
+  chapters = [{ id: 1, title: 'الفصل الأول', content: '' }]; active = 1;
+  $('nTitle').value = 'روايتي الخاصة'; $('nAuthor').value = 'كاتب بيان'; $('nGenre').value = 'خيال / دراما'; $('nNotes').value = '';
+  renderList(); loadCh(); toast('تم تسجيل الخروج');
+}
+db.auth.onAuthStateChange((ev, session) => {
+  const was = user && user.id;
+  user = session ? session.user : null;
+  renderAuth();
+  if (user && user.id !== was) setTimeout(loadData, 0);
+});
+
+/* ---------- حفظ البيانات ---------- */
+let chapters = [{ id: 1, title: 'الفصل الأول', content: '' }], active = 1;
+function snapshot() { saveCh(); return { title: $('nTitle').value, author: $('nAuthor').value, genre: $('nGenre').value, notes: $('nNotes').value, chapters, active }; }
+function apply(d) {
+  if (!d) return;
+  $('nTitle').value = d.title || ''; $('nAuthor').value = d.author || ''; $('nGenre').value = d.genre || ''; $('nNotes').value = d.notes || '';
+  if (Array.isArray(d.chapters) && d.chapters.length) { chapters = d.chapters; active = chapters.some(c => c.id === d.active) ? d.active : chapters[0].id; }
+  renderList(); loadCh();
+}
+async function save(manual) {
+  const d = snapshot();
+  localStorage.setItem('bayan_guest', JSON.stringify(d));
+  if (user) {
+    const { error } = await db.from('novels').upsert({ user_id: user.id, data: d, updated_at: new Date().toISOString() });
+    if (error) return toast('تعذر الحفظ: ' + error.message, 'err');
+  }
+  if (manual) toast(user ? 'تم الحفظ في حسابك' : 'حُفظت مسودة على هذا الجهاز فقط، سجّل دخولك لحفظها في حسابك');
+}
+const autoSave = (() => { let t; return () => { clearTimeout(t); t = setTimeout(() => save(), 1500); }; })();
+async function loadData() {
+  const { data: row, error } = await db.from('novels').select('data').eq('user_id', user.id).maybeSingle();
+  if (error) return toast('تعذر تحميل بياناتك: ' + error.message, 'err');
+  if (row) { apply(row.data); toast('تم تحميل روايتك'); } else save();
+}
+
+/* ---------- الاستوديو ---------- */
+function saveCh() {
+  const c = chapters.find(x => x.id === active);
+  if (c) { c.title = $('chTitle').value || 'فصل بدون عنوان'; c.content = $('chBody').value; }
+}
+function loadCh() {
+  const c = chapters.find(x => x.id === active);
+  if (c) { $('chTitle').value = c.title; $('chBody').value = c.content; stats(); }
+}
+function renderList() {
+  const ul = $('chList'); ul.innerHTML = '';
+  chapters.forEach(c => {
+    const li = document.createElement('li');
+    li.className = 'p-2 rounded-xl border text-xs font-semibold cursor-pointer flex items-center justify-between gap-2 ' + (c.id === active ? 'bg-orange-600/20 text-orange-400 border-orange-500/40' : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800');
+    const s = document.createElement('span'); s.className = 'truncate flex-1'; s.textContent = c.title; li.append(s);
+    if (chapters.length > 1) {
+      const d = document.createElement('button'); d.innerHTML = '<i class="fa-solid fa-trash-can"></i>'; d.className = 'text-slate-500 hover:text-rose-400';
+      d.onclick = e => { e.stopPropagation(); delCh(c.id); }; li.append(d);
+    }
+    li.onclick = () => { saveCh(); active = c.id; loadCh(); renderList(); };
+    ul.append(li);
+  });
+}
+function addCh() {
+  saveCh();
+  const id = Math.max(...chapters.map(c => c.id)) + 1;
+  chapters.push({ id, title: 'الفصل ' + id + ': عنوان جديد', content: '' }); active = id;
+  renderList(); loadCh(); autoSave();
+}
+function delCh(id) {
+  if (!confirm('حذف هذا الفصل نهائيًا؟')) return;
+  chapters = chapters.filter(c => c.id !== id);
+  if (active === id) active = chapters[0].id;
+  renderList(); loadCh(); autoSave();
+}
+function stats() {
+  const t = $('chBody').value.trim(), w = t ? t.split(/\s+/).length : 0;
+  $('stats').textContent = `الكلمات: ${w} | الحروف: ${t.length} | الصفحات المقدرة: ${Math.max(1, Math.ceil(w / 280))}`;
+}
+function wrap(a, b, ph) {
+  const t = $('chBody'), s = t.selectionStart, e = t.selectionEnd;
+  const sel = t.value.slice(s, e) || (b ? ph : '');
+  t.value = t.value.slice(0, s) + a + sel + b + t.value.slice(e);
+  saveCh(); stats(); autoSave();
+}
+$('chBody').addEventListener('input', () => { saveCh(); stats(); autoSave(); });
+$('chTitle').addEventListener('input', () => { saveCh(); renderList(); autoSave(); });
+['nTitle', 'nAuthor', 'nGenre', 'nNotes'].forEach(i => $(i).addEventListener('input', autoSave));
+
+function pdfFromHtml(html, name) {
+  const w = document.createElement('div');
+  w.dir = 'rtl'; w.style.cssText = 'font-family:Amiri,serif;color:#000;background:#fff;padding:10px;font-size:16pt;line-height:2';
+  w.innerHTML = html;
+  return html2pdf().set({ margin: 18, filename: name + '.pdf', pagebreak: { mode: ['css', 'legacy'] }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(w).save();
+}
+function exportNovel() {
+  saveCh(); toast('جارٍ تجهيز الملف...');
+  const title = $('nTitle').value || 'رواية';
+  const cover = `<div style="text-align:center;padding-top:200px;page-break-after:always"><h1 style="font-size:32pt">${esc(title)}</h1><h3>${esc($('nAuthor').value)}</h3><p>${esc($('nGenre').value)}</p></div>`;
+  const body = chapters.map((c, i) => `<h2 style="${i ? 'page-break-before:always;' : ''}text-align:center">${esc(c.title)}</h2><div style="white-space:pre-wrap;text-align:justify">${esc(c.content)}</div>`).join('');
+  pdfFromHtml(cover + body, title);
+}
+function exportEditor() {
+  const t = $('edt').value.trim(); if (!t) return toast('اكتب نصًا أولًا', 'err');
+  pdfFromHtml(`<div style="white-space:pre-wrap">${esc(t)}</div>`, 'document');
+}
+
+/* ---------- قارئ PDF والصوت ---------- */
+let pdf = null, pg = 1;
+async function openPdf(e) {
+  const f = e.target.files[0]; if (!f) return;
+  try { pdf = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise; pg = 1; showPg(); }
+  catch (x) { toast('تعذر فتح الملف', 'err'); }
+}
+async function showPg() {
+  const p = await pdf.getPage(pg), v = p.getViewport({ scale: 1.4 }), c = $('cv');
+  c.width = v.width; c.height = v.height; c.classList.remove('hidden'); $('ph').classList.add('hidden');
+  await p.render({ canvasContext: c.getContext('2d'), viewport: v }).promise;
+  $('pn').textContent = pg + ' / ' + pdf.numPages;
+  const t = await p.getTextContent();
+  $('ptxt').textContent = t.items.map(i => i.str).join(' ').trim() || 'لا يوجد نص قابل للاستخراج (قد تكون الصفحة صورة ممسوحة)';
+}
+function chPg(d) { if (!pdf) return; pg = Math.min(pdf.numPages, Math.max(1, pg + d)); showPg(); }
+async function pdfText(buf) {
+  const doc = await pdfjsLib.getDocument({ data: buf }).promise; let out = '';
+  for (let i = 1; i <= doc.numPages; i++) { const t = await (await doc.getPage(i)).getTextContent(); out += t.items.map(x => x.str).join(' ') + '\n\n'; }
+  return out;
+}
+function speak(text) {
+  speechSynthesis.cancel(); if (!text.trim()) return;
+  const u = new SpeechSynthesisUtterance(text); u.lang = /[\u0600-\u06FF]/.test(text) ? 'ar-SA' : 'en-US'; u.rate = +$('rate').value;
+  speechSynthesis.speak(u);
+}
+function toTrans() { $('tin').value = $('ptxt').textContent; tab('trans'); }
+
+/* ---------- الترجمة ---------- */
+const A = '(?<![\\u0600-\\u06FF])', Z = '(?![\\u0600-\\u06FF])';
+const TERMS = [['الإله', 'الحاكم'], ['الاله', 'الحاكم'], ['الآلهة', 'الحكام'], ['آلهة', 'حكام'], ['إله', 'حاكم'], ['اله', 'حاكم']];
+const replaceTerms = s => TERMS.reduce((x, [a, b]) => x.replace(new RegExp(A + a + Z, 'g'), b), s);
+async function translate() {
+  const src = $('tin').value.trim(); if (!src) return toast('ألصق نصًا أولًا', 'err');
+  const s = $('sl').value, t = $('tl').value, pair = (s === 'auto' ? 'Autodetect' : s) + '|' + t;
+  const pieces = src.match(/[^.!?؟\n]+[.!?؟]*\s*|\n+/g) || [src], parts = []; let b = '';
+  for (let p of pieces) {
+    if ((b + p).length > 400) { if (b.trim()) parts.push(b); b = ''; while (p.length > 400) { parts.push(p.slice(0, 400)); p = p.slice(400); } }
+    b += p;
+  }
+  if (b.trim()) parts.push(b);
+  const btn = $('tbtn'); btn.disabled = true; const out = [];
+  try {
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      if (!p.trim()) { out.push(p); continue; }
+      $('tout').textContent = `جارٍ الترجمة... ${i + 1} / ${parts.length}`;
+      const r = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(p.trim()) + '&langpair=' + pair);
+      const j = await r.json();
+      if (j.responseStatus != 200) throw new Error(j.responseDetails || 'خطأ في الخدمة');
+      out.push(j.responseData.translatedText + p.match(/\s*$/)[0]);
+    }
+    let res = out.join('');
+    if ($('rep').checked && t === 'ar') res = replaceTerms(res);
+    $('tout').textContent = res;
+  } catch (x) {
+    $('tout').textContent = 'تعذرت الترجمة: ' + x.message + '\n(الخدمة المجانية لها حد يومي للأحرف، جرّب لاحقًا أو بنص أقصر)';
+  }
+  btn.disabled = false;
+}
+async function fileTrans(e) {
+  const f = e.target.files[0]; if (!f) return;
+  try { $('tin').value = f.name.toLowerCase().endsWith('.pdf') ? await pdfText(await f.arrayBuffer()) : await f.text(); translate(); }
+  catch (x) { toast('تعذرت قراءة الملف', 'err'); }
+  e.target.value = '';
+}
+
+/* ---------- تقسيم PDF ---------- */
+async function splitPdf() {
+  const f = $('spf').files[0]; if (!f) return toast('اختر ملف PDF أولًا', 'err');
+  const a = +$('sa').value, b = +$('sb').value;
+  try {
+    const src = await PDFLib.PDFDocument.load(await f.arrayBuffer()), n = src.getPageCount();
+    if (!(a >= 1 && b >= a && b <= n)) return toast(`النطاق غير صحيح (الملف فيه ${n} صفحة)`, 'err');
+    const out = await PDFLib.PDFDocument.create();
+    (await out.copyPages(src, Array.from({ length: b - a + 1 }, (_, i) => a - 1 + i))).forEach(p => out.addPage(p));
+    dl(new Blob([await out.save()], { type: 'application/pdf' }), `pages-${a}-${b}.pdf`);
+  } catch (x) { toast('تعذر معالجة الملف', 'err'); }
+}
+
+/* ---------- تشغيل ---------- */
+try { apply(JSON.parse(localStorage.getItem('bayan_guest') || 'null')); } catch (e) {}
+renderAuth(); renderList(); loadCh(); tab('studio');
+</script>
+</body>
+</html>
