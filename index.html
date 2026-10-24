@@ -14,6 +14,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://js.puter.com/v2/"></script>
 <style type="text/tailwindcss">
 .btn{@apply px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition active:scale-95}
@@ -35,6 +36,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
 #studio.zen{position:fixed;inset:0;z-index:70;background:#0b0f19;overflow:auto;border-radius:0}.zen #chBody{min-height:60vh}
 @media(max-width:767px){body{padding-bottom:calc(4.6rem + env(safe-area-inset-bottom))}}
 #bnav [data-t].bg-orange-600{background:transparent;color:#fb923c}#bnav [data-t]{transition:color .15s}
+.vpg{position:relative;margin:0 auto 12px;background:#e5e7eb;border-radius:6px;overflow:hidden}.vpg:not(.rd)::before{content:attr(data-p);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:2rem}#vcont.nt canvas{filter:invert(1) hue-rotate(180deg)}
 .tk{cursor:pointer;border-radius:4px;padding:0 1px}.tk:hover{background:rgba(234,88,12,.25)}.tk.bad{border-bottom:2px dotted #f43f5e}#cv.nt{filter:invert(1) hue-rotate(180deg)}
 #hl{position:absolute;pointer-events:none;display:none;background:rgba(234,88,12,.38);box-shadow:0 0 0 2px rgba(251,146,60,.8);border-radius:4px;transition:left .08s,top .08s,width .08s,height .08s}
 </style>
@@ -147,10 +149,11 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
       <div class="flex items-center gap-1"><button class="btn" onclick="zoom(-.2)">−</button><button class="btn" onclick="zoom(0)"><span id="zp">100%</span> ملاءمة</button><button class="btn" onclick="zoom(.2)">+</button></div>
     </div>
     <div class="flex flex-wrap gap-2">
+ <button id="vmBtn" class="btn" onclick="setVm(!vm)"></button>
  <button id="txBtn" class="btn" onclick="txToggle()"><i class="fa-solid fa-align-right"></i> عرض النص وتصحيح الكلمات</button>
  <button class="btn" onclick="txScan()"><i class="fa-solid fa-spell-check"></i> فحص الصفحة</button>
  <button class="btn" onclick="txAuto()"><i class="fa-solid fa-wand-magic-sparkles"></i> إصلاح تلقائي</button>
- <button class="btn" onclick="$('cv').classList.toggle('nt')"><i class="fa-solid fa-moon"></i> ليلي</button>
+ <button class="btn" onclick="$('cv').classList.toggle('nt');$('vcont').classList.toggle('nt')"><i class="fa-solid fa-moon"></i> ليلي</button>
  <button class="btn" onclick="swRtl=!swRtl;lsSet('bayan_sw',swRtl?'1':'0');toast(swRtl?'السحب لليمين = الصفحة التالية':'السحب لليسار = الصفحة التالية')"><i class="fa-solid fa-hand-pointer"></i> اتجاه السحب</button>
  <button class="btn" onclick="tf(2)">A+</button><button class="btn" onclick="tf(-2)">A−</button>
  <button class="btn" onclick="bmToggle()"><i class="fa-solid fa-bookmark"></i> علامة</button>
@@ -159,13 +162,14 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
     </div>
     <div id="bmList" class="flex flex-wrap gap-2"></div>
     <input id="pgRange" type="range" min="1" max="1" value="1" class="w-full accent-orange-600" oninput="goPg(this.value)">
-    <div id="cvBox" class="relative overflow-auto bg-slate-950 rounded-xl p-2 text-center max-h-[70vh]">
+    <div id="cvBox" class="relative overflow-auto bg-slate-950 rounded-xl p-2 text-center max-h-[78vh]">
       <div id="pgWrap"><canvas id="cv" class="hidden rounded shadow-lg"></canvas><div id="txl"></div><div id="hl"></div></div>
+      <div id="vcont" style="display:none"></div>
       <div id="txView" dir="rtl" class="hidden amiri text-right text-xl leading-loose p-4 bg-slate-900 rounded-xl max-w-3xl mx-auto"></div>
       <p id="ph" class="text-xs text-slate-500 p-10"><i class="fa-solid fa-file-pdf text-4xl text-slate-700 block mb-2"></i>افتح ملف PDF لتبدأ القراءة</p>
       <div id="cvLoad" class="hidden absolute inset-0 flex items-center justify-center bg-slate-950/70"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i></div>
     </div>
-    <p class="text-[11px] text-slate-500">اسحب يمينًا أو يسارًا لتقليب الصفحات، ويتذكر الموقع آخر صفحة وقفت عندها.</p>
+    <p class="text-[11px] text-slate-500">مرّر للأسفل لقراءة الملف كاملًا بشكل طولي، أو بدّل إلى «صفحة واحدة» للسحب بين الصفحات، ويتذكر الموقع آخر صفحة وقفت عندها.</p>
   </div>
   <div class="card space-y-3">
     <div class="flex flex-wrap gap-2">
@@ -194,9 +198,9 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
   <div id="trList" class="card space-y-2 hidden"></div>
   <div class="card space-y-3">
     <h2 class="font-bold"><i class="fa-solid fa-language text-orange-500"></i> ترجمة الملف نفسه</h2>
-    <p class="text-[11px] text-slate-400 leading-relaxed">يقرأ الذكاء الاصطناعي كل صفحة كصورة بدون استخراج النص، فيعمل حتى مع الكتب الممسوحة. ثم يُبنى ملف PDF مترجم تنزّله ويُحفظ في «ترجماتي».</p>
-    <input type="file" id="pf" accept="application/pdf" class="hidden" onchange="trPick(event)">
-    <button class="btn-p w-full !py-4 !text-sm" onclick="$('pf').click()"><i class="fa-solid fa-file-pdf"></i> اختر ملف PDF للترجمة</button>
+    <p class="text-[11px] text-slate-400 leading-relaxed">يقرأ الذكاء الاصطناعي كل صفحة كصورة بدون استخراج النص، فيعمل حتى مع الكتب الممسوحة. ثم يُبنى ملف PDF مترجم تنزّله ويُحفظ في «ترجماتي». ملفات EPUB يُستخرج نصها وتُقسَّم لصفحات تلقائيًا (طريقة «الذكاء الاصطناعي» ترسل النص بدل الصورة).</p>
+    <input type="file" id="pf" accept="application/pdf,application/epub+zip,.pdf,.epub" class="hidden" onchange="trPick(event)">
+    <button class="btn-p w-full !py-4 !text-sm" onclick="$('pf').click()"><i class="fa-solid fa-file-pdf"></i> اختر ملف PDF أو EPUB للترجمة</button>
     <p id="pinfo" class="text-xs text-slate-400">لم يُختر ملف بعد</p>
     <select id="peng" class="inp"><option value="auto">تلقائي بدون حساب وبدون حد (Google ثم المحلي)</option><option value="gt">Google فقط (بدون حساب)</option><option value="local">محلي داخل جهازك</option><option value="ai">ذكاء اصطناعي من الصورة (حساب Puter)</option></select>
     <div class="grid grid-cols-2 gap-2">
@@ -514,7 +518,7 @@ async function trListRender() {
   b.innerHTML = '<b class="text-xs text-slate-300"><i class="fa-solid fa-clock-rotate-left text-orange-500"></i> ترجماتي المحفوظة</b>' + savedT.map((x, i) => `<div class="flex flex-wrap items-center gap-2 text-xs border-t border-slate-800 pt-2"><span class="truncate flex-1">${esc(x.name)}</span><span class="text-slate-500">${x.out.filter(v => v != null).length}/${x.n}</span><button class="btn !py-1" onclick="trOpenSaved(${i})">فتح</button><button class="btn !py-1" onclick="trDlSaved(${i})">PDF</button><button class="btn !py-1" onclick="trToReader(${i})">قراءة</button><button class="btn !py-1 text-rose-400" onclick="trDel(${i})"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
 }
 function trOpenSaved(i) {
-  const x = savedT[i]; trDoc = null; trId = x.id; trName = x.name; trN = x.n; trOut = x.out.slice(); trPdf = x.pdf || null; trView = 0;
+  const x = savedT[i]; trDoc = null; trEpub = null; trId = x.id; trName = x.name; trN = x.n; trOut = x.out.slice(); trPdf = x.pdf || null; trView = 0;
   $('pdir').value = x.pair || 'en|ar'; $('pfrom').value = 1; $('pto').value = trN;
   const d = trOut.filter(v => v != null).length; $('pbar').style.width = (d / trN * 100) + '%';
   $('pinfo').textContent = `${x.name}: ${trN} صفحة، المترجم ${d}` + (d < trN ? ' (لإكمال الترجمة أعد اختيار الملف الأصلي)' : ''); trShow(); tab('trans');
@@ -530,6 +534,7 @@ async function trDel(i) {
 }
 
 /* ---------- قارئ PDF ---------- */
+let vm = localStorage.getItem('bayan_vm') !== '0', vKey = '', vIO = null, vLock = 0, vTk = 0, vT = 0;
 let swRtl = localStorage.getItem('bayan_sw') !== '0', txOn = false, txFlag = {}, txSel = null;
 let pdf = null, pg = 1, zoomK = 1, rdKey = '', rdTok = 0, rt = null;
 let rdBlob = null, rdName = '', rdId = '', edits = {}, origTxt = '', edPrev = null;
@@ -551,6 +556,7 @@ async function openPdf(e) {
   e.target.value = '';
 }
 async function showPg() {
+  if (vm) return vShow();
   const tok = ++rdTok; wordsClear(); $('cvLoad').classList.remove('hidden');
   if (rt) { try { rt.cancel(); } catch (e) {} }
   const p = await pdf.getPage(pg); if (tok !== rdTok) return;
@@ -572,11 +578,59 @@ async function showPg() {
 }
 function goPg(n) { if (!pdf) return; if (R.run && !R.advancing) stopTts(); pg = Math.min(pdf.numPages, Math.max(1, Math.round(+n) || 1)); $('cvBox').scrollTop = 0; return showPg(); }
 function chPg(d) { goPg(pg + d); }
+/* ---------- العرض الطولي المتصل ---------- */
+function applyView() { $('pgWrap').style.display = (txOn || vm) ? 'none' : ''; $('vcont').style.display = (txOn || !vm) ? 'none' : ''; $('vmBtn').innerHTML = vm ? '<i class="fa-solid fa-grip-lines"></i> طولي' : '<i class="fa-solid fa-file"></i> صفحة واحدة'; }
+function setVm(on) { vm = on; lsSet('bayan_vm', on ? '1' : '0'); vKey = ''; applyView(); if (pdf) showPg(); }
+function vAt() {
+  const c = $('vcont'), b = $('cvBox'), y = b.scrollTop + b.clientHeight * .35; let lo = 0, hi = c.children.length - 1;
+  while (lo < hi) { const m = (lo + hi + 1) >> 1; if (c.children[m].offsetTop <= y) lo = m; else hi = m - 1; }
+  return lo + 1;
+}
+async function vShow() {
+  rdTok++; if (rt) { try { rt.cancel(); } catch (e) {} }
+  $('cvLoad').classList.add('hidden'); $('ph').classList.add('hidden'); applyView(); if (txOn) return;
+  const w = Math.max(200, $('cvBox').clientWidth - 16) * zoomK, key = rdId + '|' + Math.round(w) + '|' + pdf.numPages;
+  if (key !== vKey) await vBuild(w, key);
+  if (key !== vKey) return;
+  if (vAt() !== pg) vGo(pg); else vInfo();
+}
+async function vBuild(w, key) {
+  vKey = key; if (vIO) vIO.disconnect();
+  const p1 = await pdf.getPage(1), vp = p1.getViewport({ scale: 1 }), c = $('vcont'); if (key !== vKey) return;
+  c.innerHTML = ''; const h = w * vp.height / vp.width;
+  for (let i = 1; i <= pdf.numPages; i++) { const d = document.createElement('div'); d.className = 'vpg'; d.dataset.p = i; d.style.cssText = `width:${w}px;height:${h}px`; c.append(d); }
+  vIO = new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? vRender(e.target) : vFree(e.target)), { root: $('cvBox'), rootMargin: '120% 0px' });
+  [...c.children].forEach(d => vIO.observe(d));
+}
+async function vRender(d) {
+  if (d._r) return; const n = +d.dataset.p, tok = d._r = {};
+  try {
+    const p = await pdf.getPage(n); if (d._r !== tok) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = parseFloat(d.style.width), vp = p.getViewport({ scale: w / p.getViewport({ scale: 1 }).width * dpr });
+    const cv = document.createElement('canvas'); cv.width = vp.width; cv.height = vp.height; cv.style.cssText = 'width:100%;height:100%;display:block';
+    const rt2 = d._rt = p.render({ canvasContext: cv.getContext('2d'), viewport: vp }); await rt2.promise; if (d._r !== tok) return;
+    const nh = w * vp.height / vp.width; if (Math.abs(nh - parseFloat(d.style.height)) > 2) d.style.height = nh + 'px';
+    d.append(cv); d.classList.add('rd');
+  } catch (e) { if (d._r === tok) d._r = null; }
+}
+function vFree(d) { if (d._rt) { try { d._rt.cancel(); } catch (e) {} } d._r = null; d._rt = null; d.classList.remove('rd'); const c = d.querySelector('canvas'); if (c) c.remove(); }
+function vGo(n) { const d = $('vcont').children[n - 1]; if (!d) return; vLock = 1; $('cvBox').scrollTop = d.offsetTop - 4; pg = n; vInfo(); setTimeout(() => { vLock = 0; }, 150); }
+function vInfo() {
+  $('pgIn').value = pg; $('pgRange').value = pg; $('pn').textContent = 'من ' + pdf.numPages + ' · ' + Math.round(pg / pdf.numPages * 100) + '%'; $('zp').textContent = Math.round(zoomK * 100) + '%';
+  try { localStorage.setItem(rdKey, pg); } catch (e) {} clearTimeout(vT); vT = setTimeout(vText, 250); bmRender();
+}
+async function vText() {
+  if (!vm || !pdf) return; const n = pg, p = await pdf.getPage(n); if (n !== pg) return; const t = await p.getTextContent(); if (n !== pg) return;
+  origTxt = pageText(t); edPrev = null; $('ptxt').value = edits[pg] != null ? edits[pg] : origTxt; $('ptxt').placeholder = origTxt ? '' : 'لا يوجد نص قابل للاستخراج (قد تكون صورة ممسوحة). يمكنك كتابة النص يدويًا هنا'; edTag(); if (txOn) txRender();
+}
+$('cvBox').addEventListener('scroll', () => { if (!vm || !pdf || vLock || txOn) return; cancelAnimationFrame(vTk); vTk = requestAnimationFrame(() => { const n = vAt(); if (n !== pg) { pg = n; vInfo(); } }); }, { passive: true });
+const _readPlay = readPlay; readPlay = function () { if (vm) { setVm(false); toast('القراءة الصوتية تعمل في وضع «صفحة واحدة»'); } return _readPlay.apply(this, arguments); };
+applyView();
 function zoom(d) { if (!pdf) return; zoomK = d ? Math.min(3, Math.max(.5, zoomK + d)) : 1; showPg(); }
 (() => {
   let x0 = null; const b = $('cvBox');
   b.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
-  b.addEventListener('touchend', e => { if (x0 == null || zoomK > 1.05) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 70) chPg((dx > 0) === swRtl ? 1 : -1); });
+  b.addEventListener('touchend', e => { if (x0 == null || zoomK > 1.05 || vm) return; const dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 70) chPg((dx > 0) === swRtl ? 1 : -1); });
   document.addEventListener('keydown', e => { if ($('reader').classList.contains('hidden') || /INPUT|TEXTAREA/.test(e.target.tagName)) return; if (e.key === 'ArrowLeft') chPg(1); if (e.key === 'ArrowRight') chPg(-1); });
   let t; addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { if (pdf && !$('reader').classList.contains('hidden')) showPg(); }, 300); });
 })();
@@ -745,18 +799,56 @@ function splitChunks(src, max) {
   return parts;
 }
 /* ---------- ترجمة الملف نفسه (رؤية بالذكاء الاصطناعي) ---------- */
-let trDoc = null, trId = '', trName = 'translated', trOut = [], trN = 0, trStop = false, trView = 0, trPdf = null, trT;
+let trDoc = null, trEpub = null, trId = '', trName = 'translated', trOut = [], trN = 0, trStop = false, trView = 0, trPdf = null, trT;
 const TR_P = pair => 'هذه صورة صفحة من كتاب. اقرأ كل النص الظاهر فيها وترجمه ' + (pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية') + ' ترجمة أدبية دقيقة وسلسة مع الحفاظ على الفقرات والحوار. تجاهل أرقام الصفحات والرؤوس المتكررة. لا تضف شرحًا ولا مقدمة ولا ملاحظات. إن لم يوجد نص في الصفحة فأعد كلمة EMPTY فقط.' + (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '');
+const TR_T = pair => 'هذا نص من كتاب. ترجمه ' + (pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية') + ' ترجمة أدبية دقيقة وسلسة مع الحفاظ على الفقرات والحوار. لا تضف شرحًا ولا مقدمة ولا ملاحظات، وأعد الترجمة فقط.' + (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '');
+const isEpub = (blob, name) => /\.epub$/i.test(name || '') || blob.type === 'application/epub+zip';
+function epubText(html) {
+  const d = new DOMParser().parseFromString(html, 'text/html'), BL = /^(P|DIV|H[1-6]|LI|TR|BLOCKQUOTE|SECTION|ARTICLE|PRE|TABLE|UL|OL|DL|DT|DD|FIGURE|FIGCAPTION|HR|BR)$/; let o = '';
+  d.querySelectorAll('script,style,svg').forEach(x => x.remove());
+  (function w(n) {
+    if (n.nodeType === 3) o += n.nodeValue.replace(/\s+/g, ' ');
+    else if (n.nodeType === 1) { const b = BL.test(n.tagName); if (b) o += '\n'; for (const c of n.childNodes) w(c); if (b) o += '\n'; }
+  })(d.body || d.documentElement);
+  return o.split('\n').map(x => x.trim()).filter(Boolean).join('\n');
+}
+async function epubPages(blob) {
+  if (typeof JSZip === 'undefined') throw new Error('تعذر تحميل قارئ EPUB، تحقق من الاتصال');
+  const zip = await JSZip.loadAsync(await blob.arrayBuffer()), xml = async n => { const f = zip.file(n); if (!f) throw new Error('ملف ناقص داخل EPUB: ' + n); return new DOMParser().parseFromString(await f.async('string'), 'application/xml'); };
+  const root = (await xml('META-INF/container.xml')).querySelector('rootfile'); if (!root) throw new Error('ملف EPUB غير صالح');
+  const opfPath = root.getAttribute('full-path'), base = opfPath.includes('/') ? opfPath.replace(/[^/]+$/, '') : '', opf = await xml(opfPath), man = {};
+  opf.querySelectorAll('manifest > item').forEach(i => man[i.getAttribute('id')] = i);
+  const MAX = 2500, pages = []; let buf = '';
+  const push = () => { if (buf.trim()) pages.push(buf.trim()); buf = ''; };
+  for (const r of opf.querySelectorAll('spine > itemref')) {
+    const it = man[r.getAttribute('idref')]; if (!it || !/html/i.test(it.getAttribute('media-type') || '')) continue;
+    let href = decodeURIComponent((it.getAttribute('href') || '').split('#')[0]), path = base + href;
+    const parts = []; path.split('/').forEach(x => { if (x === '..') parts.pop(); else if (x !== '.') parts.push(x); }); path = parts.join('/');
+    const f = zip.file(path); if (!f) continue;
+    const t = epubText(await f.async('string')); if (!t) continue;
+    if (buf.length > 300) push();
+    for (const para of t.split('\n')) {
+      for (const seg of (para.length > MAX ? splitChunks(para, MAX) : [para])) {
+        if (buf && buf.length + seg.length + 1 > MAX) push();
+        buf += (buf ? '\n' : '') + seg.trim();
+      }
+    }
+  }
+  push();
+  if (!pages.length) throw new Error('لم أجد نصًا داخل EPUB (قد يكون محميًا DRM)');
+  return pages;
+}
 async function trLoad(blob, name) {
-  trDoc = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise;
-  trN = trDoc.numPages; trName = name.replace(/\.pdf$/i, ''); trId = 'x:' + name + '_' + blob.size; trView = 0; trStop = false;
+  if (isEpub(blob, name)) { trEpub = await epubPages(blob); trDoc = null; trN = trEpub.length; trName = name.replace(/\.epub$/i, ''); }
+  else { trDoc = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise; trEpub = null; trN = trDoc.numPages; trName = name.replace(/\.pdf$/i, ''); }
+  trId = 'x:' + name + '_' + blob.size; trView = 0; trStop = false;
   const old = await dbGet(trId); trOut = old && old.out ? old.out.slice() : []; trPdf = old && old.pdf || null;
   if (old && old.pair) $('pdir').value = old.pair;
   $('pfrom').value = 1; $('pto').value = trN;
   const d = trOut.filter(v => v != null).length; $('pbar').style.width = (d / trN * 100) + '%'; $('pstat').textContent = '';
   $('pinfo').textContent = `${name}: ${trN} صفحة` + (d ? ` · المترجم سابقًا ${d} (ستكمل منها)` : ''); trShow();
 }
-async function trPick(e) { const f = e.target.files[0]; if (!f) return; try { await trLoad(f, f.name); } catch (x) { $('pinfo').textContent = 'تعذرت قراءة الملف'; } e.target.value = ''; }
+async function trPick(e) { const f = e.target.files[0]; if (!f) return; try { await trLoad(f, f.name); } catch (x) { $('pinfo').textContent = 'تعذرت قراءة الملف: ' + errMsg(x); } e.target.value = ''; }
 async function trFromReader() { if (!rdBlob) return toast('افتح ملفًا في القارئ أولًا', 'err'); try { await trLoad(rdBlob, rdName || 'book.pdf'); tab('trans'); } catch (x) { toast('تعذر فتح الملف', 'err'); } }
 async function pageImg(i) {
   const p = await trDoc.getPage(i + 1), v0 = p.getViewport({ scale: 1 }), v = p.getViewport({ scale: 1600 / Math.max(v0.width, v0.height) });
@@ -768,7 +860,7 @@ async function aiPage(i, pair) {
   let last;
   for (let k = 0; k < 3 && !trStop; k++) {
     try {
-      const r = await puter.ai.chat(TR_P(pair), await pageImg(i), { model: $('pmodel').value.trim() || 'gpt-5-nano' });
+      const mo = { model: $('pmodel').value.trim() || 'gpt-5-nano' }, r = trEpub ? await puter.ai.chat(TR_T(pair) + '\n\n' + trEpub[i], mo) : await puter.ai.chat(TR_P(pair), await pageImg(i), mo);
       const c = r && r.message ? r.message.content : r, t = (typeof c === 'string' ? c : Array.isArray(c) ? c.map(z => z.text || '').join('') : String(c)).trim();
       return /^EMPTY\.?$/i.test(t) ? '' : t;
     } catch (e) { last = e; await new Promise(r => setTimeout(r, 2000 * (k + 1))); }
@@ -809,14 +901,14 @@ async function textPart(p, pair, eng) {
 }
 async function trPage(i, pair) {
   const eng = $('peng').value; if (eng === 'ai') return aiPage(i, pair);
-  const txt = pageText(await (await trDoc.getPage(i + 1)).getTextContent());
+  const txt = trEpub ? trEpub[i] : pageText(await (await trDoc.getPage(i + 1)).getTextContent());
   if (!txt) { trSkipped++; return ''; }
   let out = '';
   for (const p of splitChunks(txt, pair.startsWith('ar') ? 350 : 500)) { if (trStop) return null; out += await textPart(p, pair, eng); }
   return out;
 }
 async function trGo() {
-  if (!trDoc) return toast('اختر ملف PDF أولًا (أو أعد اختيار الملف الأصلي لإكمال الترجمة)', 'err');
+  if (!trDoc && !trEpub) return toast('اختر ملف PDF أو EPUB أولًا (أو أعد اختيار الملف الأصلي لإكمال الترجمة)', 'err');
   const pair = $('pdir').value, a = Math.max(1, +$('pfrom').value || 1), b = Math.min(trN, +$('pto').value || trN), todo = [];
   for (let i = a - 1; i < b; i++) if (trOut[i] == null) todo.push(i);
   if (!todo.length) return toast('كل صفحات هذا النطاق مترجمة');
@@ -1031,7 +1123,7 @@ const arFix = s => s.normalize('NFKC').replace(/\u0640/g, '');
 const txBad = t => { const w = t.replace(TKP, ''); return COMMON.some(c => c[0] === w) || !!txFlag[w] || arFix(w) !== w; };
 function txToggle() {
   if (!pdf) return toast('افتح ملفًا أولًا', 'err');
-  txOn = !txOn; $('pgWrap').style.display = txOn ? 'none' : ''; $('txView').classList.toggle('hidden', !txOn); $('txBtn').classList.toggle('!bg-orange-600', txOn); if (txOn) txRender();
+  txOn = !txOn; applyView(); $('txView').classList.toggle('hidden', !txOn); $('txBtn').classList.toggle('!bg-orange-600', txOn); if (txOn) txRender();
 }
 function txRender() {
   $('txView').innerHTML = $('ptxt').value.split('\n').map((l, i) => l.trim() ? '<p class="mb-3">' + l.split(/(\s+)/).map((t, j) => /\S/.test(t) ? `<span class="tk${txBad(t) ? ' bad' : ''}" onclick="txOpen(${i},${j})">${esc(t)}</span>` : ' ').join('') + '</p>' : '<br>').join('') || '<span class="text-slate-500 text-sm">لا يوجد نص في هذه الصفحة</span>';
