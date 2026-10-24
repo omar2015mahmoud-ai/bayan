@@ -59,7 +59,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
     <button data-t="trans" onclick="tab('trans')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-language"></i> الترجمة</button>
     <button data-t="editor" onclick="tab('editor')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-spell-check"></i> المحرر والتدقيق</button>
     <button data-t="split" onclick="tab('split')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-scissors"></i> تقسيم PDF</button>
-    <button data-t="comm" onclick="tab('comm');cmLoad()" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-users-rectangle"></i> المجتمع</button>
+    <a href="https://x.com/oqx90" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap text-orange-400 hover:text-orange-300"><i class="fa-solid fa-link"></i> حسابي</a>
   </div>
 </nav>
 
@@ -74,11 +74,10 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
   </div>
   <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
     <button class="card !p-4 text-xs font-bold text-center space-y-1" onclick="tab('studio');addCh()"><i class="fa-solid fa-plus text-orange-500 text-xl block"></i>فصل جديد</button>
-    <button class="card !p-4 text-xs font-bold text-center space-y-1" onclick="tab('comm');cmLoad()"><i class="fa-solid fa-users-rectangle text-orange-500 text-xl block"></i>المجتمع</button>
     <button class="card !p-4 text-xs font-bold text-center space-y-1" onclick="tab('trans')"><i class="fa-solid fa-language text-orange-500 text-xl block"></i>ترجمة ملف</button>
     <button class="card !p-4 text-xs font-bold text-center space-y-1" onclick="tab('editor')"><i class="fa-solid fa-spell-check text-orange-500 text-xl block"></i>المحرر والتدقيق</button>
     <button class="card !p-4 text-xs font-bold text-center space-y-1" onclick="tab('split')"><i class="fa-solid fa-scissors text-orange-500 text-xl block"></i>تقسيم PDF</button>
-    <button class="card !p-4 text-xs font-bold text-center space-y-1" onclick="cmPubOpen()"><i class="fa-solid fa-paper-plane text-orange-500 text-xl block"></i>انشر عملك</button>
+    <a href="https://x.com/oqx90" target="_blank" rel="noopener noreferrer" class="card !p-4 text-xs font-bold text-center space-y-1"><i class="fa-solid fa-link text-orange-500 text-xl block"></i>حسابي على X</a>
   </div>
 </section>
 
@@ -244,15 +243,6 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
   </div>
 </section>
 
-<!-- COMMUNITY -->
-<section id="comm" class="sec hidden space-y-4">
-  <div class="card space-y-3">
-    <div class="flex flex-wrap items-center justify-between gap-2"><h2 class="font-bold"><i class="fa-solid fa-users-rectangle text-orange-500"></i> مجتمع بيان</h2><button class="btn-p" onclick="cmPubOpen()">+ انشر عملك</button></div>
-    <div class="flex flex-wrap gap-2"><select id="cmKind" class="inp !w-auto" onchange="cmLoad()"><option value="">الكل</option><option value="novel">روايات</option><option value="story">قصص قصيرة</option></select><select id="cmSort" class="inp !w-auto" onchange="cmRender()"><option value="new">الأحدث</option><option value="likes">الأكثر إعجابًا</option></select><input id="cmQ" class="inp flex-1" placeholder="ابحث بالعنوان أو التصنيف" oninput="cmRender()"></div>
-  </div>
-  <div id="cmFeed" class="grid sm:grid-cols-2 gap-3"></div>
-</section>
-
 <!-- SPLIT -->
 <section id="split" class="sec hidden grid md:grid-cols-2 gap-4">
   <div class="card space-y-3">
@@ -268,19 +258,6 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
   </div>
 </section>
 </main>
-<div id="cmPub" class="hidden fixed inset-0 z-[66] bg-black/70 flex items-end sm:items-center justify-center p-3">
- <div class="card w-full max-w-md space-y-3">
-  <b>نشر في المجتمع</b>
-  <select id="cmPS" class="inp"><option value="cur">الفصل الحالي (قصة قصيرة)</option><option value="all">الرواية كاملة بكل فصولها</option></select>
-  <select id="cmPK" class="inp"><option value="story">قصة قصيرة</option><option value="novel">رواية</option></select>
-  <input id="cmPT" class="inp" placeholder="عنوان العمل" maxlength="120">
-  <input id="cmPG" class="inp" placeholder="التصنيف (دراما، رعب، رومانسي...)" maxlength="40">
-  <textarea id="cmPM" rows="3" class="inp resize-none" placeholder="نبذة قصيرة تشجّع على القراءة" maxlength="400"></textarea>
-  <p class="text-[11px] text-slate-400">يُنشر نسخة من نصك الآن ويراها الجميع. لتحديثها انشرها من جديد بعد حذف القديمة.</p>
-  <div class="flex gap-2"><button class="btn-p flex-1" onclick="cmPubGo()">نشر</button><button class="btn flex-1" onclick="$('cmPub').classList.add('hidden')">إلغاء</button></div>
- </div>
-</div>
-<div id="cmView" class="hidden fixed inset-0 z-[65] bg-slate-950 overflow-y-auto"><div id="cmBox" class="max-w-2xl mx-auto p-4 space-y-4"></div></div>
 <div id="wfx" class="hidden fixed inset-x-0 bottom-0 z-[60] bg-slate-900 border-t border-slate-700 rounded-t-2xl p-4 space-y-3 shadow-2xl shadow-black max-w-xl mx-auto">
  <div class="flex items-center justify-between"><b class="text-xs text-slate-300">تصحيح الكلمة: <span id="wfW" class="amiri text-lg text-rose-400"></span></b><button class="btn" onclick="$('wfx').classList.add('hidden')">✕</button></div>
  <div id="wfS" class="flex flex-wrap gap-2"></div>
@@ -323,7 +300,7 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
   <button data-t="home" onclick="tab('home')" class="flex-1 py-2 flex flex-col items-center gap-0.5 text-[10px] text-slate-400"><i class="fa-solid fa-house text-lg"></i>الرئيسية</button>
   <button data-t="studio" onclick="tab('studio')" class="flex-1 py-2 flex flex-col items-center gap-0.5 text-[10px] text-slate-400"><i class="fa-solid fa-feather-pointed text-lg"></i>التأليف</button>
   <button data-t="reader" onclick="tab('reader')" class="flex-1 py-2 flex flex-col items-center gap-0.5 text-[10px] text-slate-400"><i class="fa-solid fa-book-open text-lg"></i>القراءة</button>
-  <button data-t="comm" onclick="tab('comm');cmLoad()" class="flex-1 py-2 flex flex-col items-center gap-0.5 text-[10px] text-slate-400"><i class="fa-solid fa-users-rectangle text-lg"></i>المجتمع</button>
+  <a href="https://x.com/oqx90" target="_blank" rel="noopener noreferrer" class="flex-1 py-2 flex flex-col items-center gap-0.5 text-[10px] text-orange-400"><i class="fa-solid fa-link text-lg"></i>حسابي</a>
   <button id="bmore" onclick="$('moreSheet').classList.toggle('hidden')" class="flex-1 py-2 flex flex-col items-center gap-0.5 text-[10px] text-slate-400"><i class="fa-solid fa-ellipsis text-lg"></i>المزيد</button>
 </nav>
 <div id="moreSheet" class="hidden fixed inset-0 z-[44] bg-black/60" onclick="this.classList.add('hidden')"><div class="absolute bottom-16 inset-x-3 card space-y-2 mb-[env(safe-area-inset-bottom)]">
@@ -366,8 +343,7 @@ function renderAuth() {
   if (user) {
     const s = document.createElement('span'); s.className = 'text-xs font-bold text-orange-400 ml-2'; s.textContent = user.email;
     const o = document.createElement('button'); o.className = 'btn'; o.textContent = 'خروج'; o.onclick = logout;
-    const pb = document.createElement('button'); pb.className = 'btn'; pb.innerHTML = '<i class="fa-solid fa-user"></i> ملفي'; pb.onclick = () => { tab('comm'); openProfile(user.id); };
-    b.append(s, pb, o);
+    b.append(s, o);
   } else {
     const i = document.createElement('button'); i.className = 'btn-p'; i.innerHTML = '<i class="fa-solid fa-user-lock"></i> دخول / حساب جديد'; i.onclick = openAuth;
     b.append(i);
@@ -1092,95 +1068,6 @@ async function txScan() {
     (await r.json()).matches.forEach(m => { const w = t.substr(m.offset, m.length).replace(TKP, ''); if (w && m.replacements.length) txFlag[w] = m.replacements.slice(0, 3).map(x => x.value); });
     if (txOn) txRender(); else txToggle(); toast(Object.keys(txFlag).length + ' كلمة تحتاج مراجعة، اضغط عليها');
   } catch (x) { toast('تعذر الفحص: ' + errMsg(x), 'err'); }
-}
-
-/* ---------- المجتمع والملفات الشخصية ---------- */
-let cmPosts = [], myProf = null, cmCur = null, cmLiked = false, cmN = 0;
-const cmErr = e => { const m = (e && e.message) || String(e); toast('المجتمع: ' + m + (/relation|does not exist|schema|cache/i.test(m) ? ' — شغّل ملف community.sql في Supabase أولًا' : ''), 'err'); };
-const needLogin = () => { if (user) return false; toast('سجّل دخولك أولًا', 'err'); openAuth(); return true; };
-const cmName = p => (p && p.name) || 'كاتب مجهول', cmAv = p => (p && p.avatar) || '✍️', cnt = x => (x && x[0] && x[0].count) || 0;
-const cmShow = h => { $('cmView').classList.remove('hidden'); $('cmBox').innerHTML = '<button class="btn" onclick="cmClose()">✕ رجوع</button>' + h; $('cmView').scrollTop = 0; };
-const cmClose = () => $('cmView').classList.add('hidden');
-async function ensureProf() {
-  if (myProf && myProf.id === user.id) return myProf;
-  let { data } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
-  if (!data) { data = { id: user.id, name: 'كاتب ' + user.id.slice(0, 4), avatar: '✍️', bio: '' }; const { error } = await db.from('profiles').insert(data); if (error) { cmErr(error); return null; } }
-  return myProf = data;
-}
-async function cmLoad() {
-  $('cmFeed').innerHTML = '<p class="text-xs text-slate-500">جارٍ التحميل...</p>';
-  let q = db.from('posts').select('id,title,kind,genre,summary,created_at,user_id,profiles(name,avatar),likes(count),comments(count)').order('created_at', { ascending: false }).limit(60);
-  if ($('cmKind').value) q = q.eq('kind', $('cmKind').value);
-  const { data, error } = await q; if (error) { $('cmFeed').innerHTML = ''; return cmErr(error); }
-  cmPosts = data || []; cmRender();
-}
-function cmRender() {
-  const q = $('cmQ').value.trim(), L = cmPosts.filter(p => !q || (p.title + ' ' + (p.genre || '')).includes(q));
-  if ($('cmSort').value === 'likes') L.sort((a, b) => cnt(b.likes) - cnt(a.likes));
-  $('cmFeed').innerHTML = L.length ? L.map(p => `<div class="card !p-4 space-y-2 cursor-pointer" onclick="cmOpen('${p.id}')"><div class="flex items-center gap-2 text-[11px] text-slate-400"><span class="px-2 py-0.5 rounded-full ${p.kind === 'novel' ? 'bg-violet-600/30 text-violet-300' : 'bg-orange-600/30 text-orange-300'}">${p.kind === 'novel' ? 'رواية' : 'قصة قصيرة'}</span><span>${esc(p.genre || '')}</span></div><h3 class="amiri text-xl font-bold text-orange-400">${esc(p.title)}</h3><p class="text-xs text-slate-300 line-clamp-3">${esc(p.summary || '')}</p><div class="flex items-center justify-between text-[11px] text-slate-400"><span>${esc(cmAv(p.profiles))} ${esc(cmName(p.profiles))}</span><span>♥ ${cnt(p.likes)} · 💬 ${cnt(p.comments)}</span></div></div>`).join('') : '<p class="text-xs text-slate-500">لا توجد أعمال بعد، كن أول من ينشر!</p>';
-}
-function cmPubOpen() { if (needLogin()) return; saveCh(); $('cmPT').value = $('cmPS').value === 'all' ? $('nTitle').value : $('chTitle').value; $('cmPub').classList.remove('hidden'); }
-async function cmPubGo() {
-  saveCh(); const title = $('cmPT').value.trim(), all = $('cmPS').value === 'all';
-  const body = all ? chapters.filter(c => c.content.trim()).map(c => c.title + '\n\n' + c.content.trim()).join('\n\n❦ ❦ ❦\n\n') : $('chBody').value.trim();
-  if (!title || wc(body) < 50) return toast('اكتب عنوانًا ونصًا لا يقل عن 50 كلمة', 'err');
-  if (!await ensureProf()) return;
-  const { error } = await db.from('posts').insert({ user_id: user.id, title, kind: $('cmPK').value, genre: $('cmPG').value.trim(), summary: $('cmPM').value.trim(), body });
-  if (error) return cmErr(error);
-  $('cmPub').classList.add('hidden'); toast('تم النشر في المجتمع 🎉'); tab('comm'); cmLoad();
-}
-const cmFs = d => { tf(d); $('cmBody').style.fontSize = tfs + 'px'; };
-const cmLkDraw = () => { $('cmLk').textContent = (cmLiked ? '♥ ' : '♡ ') + cmN; $('cmLk').classList.toggle('!bg-rose-600', cmLiked); };
-async function cmOpen(id) {
-  const { data: p, error } = await db.from('posts').select('*,profiles(name,avatar)').eq('id', id).maybeSingle(); if (error || !p) return cmErr(error || 'العمل غير موجود');
-  cmCur = p; const c = await db.from('likes').select('*', { count: 'exact', head: true }).eq('post_id', id); cmN = c.count || 0; cmLiked = false;
-  if (user) { const r = await db.from('likes').select('post_id').eq('post_id', id).eq('user_id', user.id).maybeSingle(); cmLiked = !!r.data; }
-  cmShow(`<div class="space-y-1"><h2 class="amiri text-3xl font-bold text-orange-400">${esc(p.title)}</h2><button class="text-xs text-slate-400" onclick="openProfile('${p.user_id}')">${esc(cmAv(p.profiles))} ${esc(cmName(p.profiles))} · ${p.kind === 'novel' ? 'رواية' : 'قصة قصيرة'} · ${new Date(p.created_at).toLocaleDateString('ar')}</button></div>
-  ${p.summary ? `<p class="text-sm text-slate-300 border-r-2 border-orange-500 pr-3">${esc(p.summary)}</p>` : ''}
-  <div id="cmBody" dir="rtl" class="amiri leading-loose text-slate-100 whitespace-pre-wrap" style="font-size:${tfs}px">${esc(p.body)}</div>
-  <div class="flex flex-wrap gap-2"><button id="cmLk" class="btn" onclick="cmLike()"></button><button class="btn" onclick="cmFs(2)">A+</button><button class="btn" onclick="cmFs(-2)">A−</button><button class="btn" onclick="cmReport()">إبلاغ</button>${user && user.id === p.user_id ? '<button class="btn !text-rose-400" onclick="cmDel()">حذف عملي</button>' : ''}</div>
-  <div class="space-y-2"><b class="text-sm">التعليقات</b><div id="cmCm" class="space-y-2"></div><div class="flex gap-2"><input id="cmIn" class="inp" maxlength="1000" placeholder="اكتب تعليقك"><button class="btn-p" onclick="cmComment()">أرسل</button></div></div>`);
-  cmLkDraw(); cmCmLoad();
-}
-async function cmLike() {
-  if (needLogin() || !await ensureProf()) return; const id = cmCur.id;
-  const r = cmLiked ? await db.from('likes').delete().eq('post_id', id).eq('user_id', user.id) : await db.from('likes').insert({ post_id: id, user_id: user.id });
-  if (r.error) return cmErr(r.error); cmLiked = !cmLiked; cmN += cmLiked ? 1 : -1; cmLkDraw();
-}
-async function cmCmLoad() {
-  const { data, error } = await db.from('comments').select('id,body,created_at,user_id,profiles(name,avatar)').eq('post_id', cmCur.id).order('created_at'); if (error) return cmErr(error);
-  $('cmCm').innerHTML = (data || []).map(c => `<div class="bg-slate-900 rounded-xl p-3 text-xs space-y-1"><div class="flex justify-between text-slate-400"><button onclick="openProfile('${c.user_id}')">${esc(cmAv(c.profiles))} ${esc(cmName(c.profiles))}</button>${user && user.id === c.user_id ? `<button class="text-rose-400" onclick="cmCmDel('${c.id}')">حذف</button>` : ''}</div><p class="text-sm whitespace-pre-wrap">${esc(c.body)}</p></div>`).join('') || '<p class="text-xs text-slate-500">كن أول من يعلّق</p>';
-}
-async function cmComment() {
-  if (needLogin()) return; const b = $('cmIn').value.trim(); if (!b || !await ensureProf()) return;
-  const { error } = await db.from('comments').insert({ post_id: cmCur.id, user_id: user.id, body: b.slice(0, 1000) }); if (error) return cmErr(error); $('cmIn').value = ''; cmCmLoad();
-}
-async function cmCmDel(id) { const { error } = await db.from('comments').delete().eq('id', id); if (error) return cmErr(error); cmCmLoad(); }
-async function cmReport() {
-  if (needLogin() || !await ensureProf()) return; const r = prompt('سبب الإبلاغ؟ (محتوى مسيء، منسوخ، ...)'); if (!r) return;
-  const { error } = await db.from('reports').insert({ post_id: cmCur.id, user_id: user.id, reason: r.slice(0, 300) }); toast(error ? error.message : 'وصلنا بلاغك، شكرًا', error ? 'err' : 'ok');
-}
-async function cmDel() {
-  if (!confirm('حذف هذا العمل من المجتمع نهائيًا؟')) return;
-  const { error } = await db.from('posts').delete().eq('id', cmCur.id); if (error) return cmErr(error); cmClose(); toast('تم الحذف'); cmLoad();
-}
-async function openProfile(uid) {
-  if (!uid) return;
-  const { data: p } = await db.from('profiles').select('*').eq('id', uid).maybeSingle();
-  const { data: ps, error } = await db.from('posts').select('id,title,kind,created_at,likes(count)').eq('user_id', uid).order('created_at', { ascending: false }); if (error) return cmErr(error);
-  const W = ps || [], pr = p || { name: 'كاتب مجهول', avatar: '✍️', bio: '' }, mine = user && user.id === uid;
-  cmShow(`<div class="card text-center space-y-2"><div class="text-5xl">${esc(cmAv(pr))}</div><h2 class="amiri text-2xl font-bold text-orange-400">${esc(cmName(pr))}</h2><p class="text-sm text-slate-300 whitespace-pre-wrap">${esc(pr.bio || '')}</p><div class="text-[11px] text-slate-400">${W.length} عمل · ♥ ${W.reduce((a, x) => a + cnt(x.likes), 0)}${p ? ' · انضم ' + new Date(p.created_at).toLocaleDateString('ar') : ''}</div>${mine ? '<button class="btn-p" onclick="pfEdit()">تعديل ملفي</button>' : ''}</div>
-  <b class="text-sm">الأعمال</b>` + (W.map(x => `<div class="card !p-3 flex items-center justify-between cursor-pointer" onclick="cmOpen('${x.id}')"><span class="amiri text-lg">${esc(x.title)}</span><span class="text-[11px] text-slate-400">${x.kind === 'novel' ? 'رواية' : 'قصة'} · ♥ ${cnt(x.likes)}</span></div>`).join('') || '<p class="text-xs text-slate-500">لا توجد أعمال منشورة بعد</p>'));
-}
-async function pfEdit() {
-  const p = await ensureProf(); if (!p) return;
-  cmShow(`<div class="card space-y-3"><b>تعديل الملف الشخصي</b><div class="flex flex-wrap gap-2">${['✍️', '📖', '🦉', '🌙', '🔥', '🌹', '🦅', '🐺'].map(e => `<button class="btn !text-lg" onclick="$('pfAv').value=this.textContent">${e}</button>`).join('')}</div><input id="pfAv" class="inp !w-20 text-center !text-lg" maxlength="4" value="${esc(p.avatar || '✍️')}"><input id="pfNm" class="inp" maxlength="40" placeholder="اسمك أو اسمك المستعار" value="${esc(p.name || '')}"><textarea id="pfBio" rows="4" maxlength="300" class="inp resize-none" placeholder="نبذة عنك وعن كتابتك">${esc(p.bio || '')}</textarea><p class="text-[11px] text-slate-400">اسمك ونبذتك يراها الجميع، فلا تكتب إيميلك أو بيانات خاصة.</p><button class="btn-p w-full" onclick="pfSave()">حفظ</button></div>`);
-}
-async function pfSave() {
-  const name = $('pfNm').value.trim(); if (!name) return toast('اكتب اسمًا', 'err');
-  const v = { name: name.slice(0, 40), avatar: [...($('pfAv').value.trim() || '✍️')].slice(0, 2).join(''), bio: $('pfBio').value.trim().slice(0, 300) };
-  const { error } = await db.from('profiles').update(v).eq('id', user.id); if (error) return cmErr(error);
-  myProf = { ...myProf, ...v }; toast('تم حفظ ملفك'); openProfile(user.id);
 }
 
 /* ---------- أدوات الكاتب ---------- */
