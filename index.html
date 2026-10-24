@@ -68,6 +68,86 @@ body .inp:focus{border-color:#fb923c;box-shadow:0 0 0 3px rgba(251,146,60,.18)}
 .qa{transition:transform .2s,border-color .2s}.qa:hover{transform:translateY(-3px);border-color:rgba(251,146,60,.55)}
 .qa i{width:2.9rem;height:2.9rem;line-height:2.9rem!important;border-radius:1rem;margin:0 auto .55rem!important;font-size:1.1rem!important;color:#fdba74!important;background:linear-gradient(135deg,rgba(249,115,22,.26),rgba(167,139,250,.26))}
 @media(max-width:480px){.hero{padding:1.1rem;gap:.8rem}.logo-lg{width:64px;height:64px}}
+/* ===== رفيق بيان: الشات والجو ===== */
+.rf-fab{position:fixed;z-index:80;left:14px;bottom:calc(5.6rem + env(safe-area-inset-bottom));width:56px;height:56px;padding:0;border:0;background:none;cursor:pointer;filter:drop-shadow(0 8px 20px rgba(236,72,153,.45));transition:transform .2s}
+.rf-fab svg{width:100%;height:100%;display:block}
+.rf-fab:hover{transform:translateY(-2px) rotate(-3deg)}
+.rf-fab.open{display:none}
+.rf-fab .rf-dot{position:absolute;top:-3px;right:-3px;width:15px;height:15px;border-radius:50%;background:#34d399;border:2px solid #0b0f19;display:none}
+.rf-fab.nudge .rf-dot{display:block;animation:rfPulse 1.6s ease-out infinite}
+@keyframes rfPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.7)}100%{box-shadow:0 0 0 12px rgba(52,211,153,0)}}
+.rf-nudge{position:fixed;z-index:80;left:78px;bottom:calc(5.9rem + env(safe-area-inset-bottom));max-width:220px;display:none;padding:.55rem .8rem;border-radius:1rem 1rem 1rem .25rem;background:#1e293b;border:1px solid rgba(251,146,60,.45);color:#f1f5f9;font-size:12px;line-height:1.7;font-weight:600;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.5)}
+@media(min-width:768px){.rf-fab{bottom:22px;left:22px}.rf-nudge{bottom:28px;left:88px}}
+
+.rf-panel{position:fixed;z-index:85;left:0;right:0;bottom:0;height:min(66dvh,580px);display:none;flex-direction:column;overflow:hidden;border-radius:1.5rem 1.5rem 0 0;background:linear-gradient(165deg,#161d30,#090d18);border:1px solid rgba(251,146,60,.26);border-bottom:0;box-shadow:0 -18px 60px rgba(0,0,0,.6);padding-bottom:env(safe-area-inset-bottom);transition:height .25s ease}
+.rf-panel.rf-open{display:flex;animation:rfUp .28s cubic-bezier(.2,.8,.2,1)}
+.rf-panel.peek{height:min(34dvh,300px)}
+@keyframes rfUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@media(min-width:768px){.rf-panel{left:22px;right:auto;bottom:22px;width:404px;height:min(640px,calc(100dvh - 44px));border-radius:1.5rem;border-bottom:1px solid rgba(251,146,60,.26);padding-bottom:0;box-shadow:0 24px 70px rgba(0,0,0,.65)}.rf-panel.peek{height:300px}}
+
+.rf-h{position:relative;flex:none;display:flex;align-items:center;gap:.35rem;padding:.65rem .75rem}
+.rf-h::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:linear-gradient(90deg,transparent,rgba(251,146,60,.55),rgba(236,72,153,.45),rgba(167,139,250,.55),transparent)}
+.rf-av{width:34px;height:34px;flex:none;filter:drop-shadow(0 4px 10px rgba(236,72,153,.4))}
+.rf-ht{flex:1;min-width:0;line-height:1.25;margin-inline-start:.2rem}
+.rf-ht b{display:block;font-family:Amiri,serif;font-size:1.3rem;font-weight:700;background:linear-gradient(270deg,#fdba74,#f9a8d4,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rf-ht span{display:block;font-size:10.5px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rf-ib{flex:none;min-width:34px;height:34px;padding:0 .55rem;display:inline-flex;align-items:center;justify-content:center;gap:.35rem;border-radius:.8rem;border:1px solid transparent;background:transparent;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.rf-ib:hover{color:#fff;background:rgba(255,255,255,.07)}
+.rf-ib.on{color:#fdba74;border-color:rgba(251,146,60,.4);background:rgba(251,146,60,.1)}
+.rf-moods{display:none;flex:none;gap:.4rem;flex-wrap:wrap;padding:.6rem .75rem;border-bottom:1px solid rgba(71,85,105,.35);background:rgba(2,6,23,.4)}
+.rf-moods button{font-size:11.5px;font-weight:700;padding:.3rem .8rem;border-radius:999px;color:#cbd5e1;border:1px solid rgba(71,85,105,.6);background:rgba(30,41,59,.6);cursor:pointer}
+.rf-moods button.on{color:#fff;border-color:transparent;background:linear-gradient(135deg,#fb923c,#ea580c)}
+
+.rf-log{flex:1;min-height:0;overflow-y:auto;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.75rem;scroll-behavior:smooth;overscroll-behavior:contain}
+.rf-u{align-self:flex-start;max-width:86%;padding:.5rem .85rem;border-radius:1.1rem 1.1rem .3rem 1.1rem;background:linear-gradient(135deg,#fb923c,#ea580c);color:#fff;font-size:.84rem;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.rf-a{font-family:Amiri,serif;font-size:1.04rem;line-height:1.95;color:#e5e7eb;border-inline-start:2px solid;border-image:linear-gradient(180deg,#fb923c,#ec4899,#7c3aed) 1;padding-inline-start:.85rem;word-break:break-word}
+.rf-a p{margin:0 0 .45rem}
+.rf-a h4{margin:.5rem 0 .2rem;font-family:Cairo,sans-serif;font-size:.8rem;font-weight:800;color:#fdba74}
+.rf-a ul,.rf-a ol{margin:.2rem 0 .5rem;padding-inline-start:1.25rem}
+.rf-a ul{list-style:disc}.rf-a ol{list-style:decimal}
+.rf-a li{margin-bottom:.15rem}
+.rf-a b{color:#fdba74;font-weight:700}
+.cs{display:inline-block;direction:ltr;font-family:Cairo,sans-serif;font-size:.78rem;font-weight:800;line-height:1.5;padding:0 .55rem;border-radius:999px;background:rgba(251,146,60,.16);color:#fdba74;border:1px solid rgba(251,146,60,.4)}
+.rf-t{align-self:flex-start;display:inline-flex;align-items:center;gap:.45rem;max-width:100%;padding:.22rem .7rem;border-radius:999px;border:1px solid rgba(71,85,105,.6);background:rgba(15,23,42,.65);color:#94a3b8;font-size:10.5px;font-weight:700}
+.rf-t i{color:#fb923c}
+.rf-t button{margin-inline-start:.2rem;padding:0 .5rem;border-radius:999px;border:1px solid rgba(251,146,60,.5);color:#fdba74;background:transparent;font-size:10.5px;font-weight:800;cursor:pointer}
+.rf-ty{align-self:flex-start;display:flex;gap:5px;padding:.4rem .2rem}
+.rf-ty i{width:7px;height:7px;border-radius:50%;background:#fb923c;opacity:.35;animation:rfDot 1.1s infinite}
+.rf-ty i:nth-child(2){animation-delay:.18s}.rf-ty i:nth-child(3){animation-delay:.36s}
+@keyframes rfDot{0%,100%{opacity:.25;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+.rf-q{flex:none;display:flex;gap:.4rem;overflow-x:auto;padding:0 .75rem;scrollbar-width:none}
+.rf-q:not(:empty){padding-bottom:.5rem}
+.rf-q button{flex:none;font-size:11.5px;font-weight:700;padding:.35rem .85rem;border-radius:999px;color:#fdba74;border:1px solid rgba(251,146,60,.4);background:rgba(251,146,60,.08);cursor:pointer;white-space:nowrap}
+.rf-q button:hover{background:rgba(251,146,60,.18)}
+.rf-in{flex:none;display:flex;align-items:flex-end;gap:.5rem;padding:.6rem .75rem .75rem;border-top:1px solid rgba(71,85,105,.4)}
+.rf-in textarea{flex:1;min-width:0;resize:none;max-height:120px;padding:.6rem .8rem;border-radius:1rem;border:1px solid rgba(51,65,85,.85);background:rgba(2,6,23,.6);color:#f3f4f6;font:600 16px/1.6 Cairo,sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+@media(min-width:768px){.rf-in textarea{font-size:13px}}
+.rf-in textarea:focus{border-color:#fb923c;box-shadow:0 0 0 3px rgba(251,146,60,.18)}
+.rf-send{flex:none;width:42px;height:42px;border:0;border-radius:50%;cursor:pointer;color:#fff;background:linear-gradient(135deg,#fb923c,#ea580c);box-shadow:0 6px 18px rgba(234,88,12,.4);transition:transform .15s}
+.rf-send:active{transform:scale(.92)}
+.rf-send i{display:inline-block}
+.rf-send .fa-paper-plane{transform:scaleX(-1)}
+.rf-panel button:focus-visible,.rf-fab:focus-visible,.rf-in textarea:focus-visible{outline:2px solid #fb923c;outline-offset:2px}
+.rf-flash{box-shadow:0 0 0 3px rgba(251,146,60,.55)!important}
+
+.rf-ring{position:fixed;z-index:84;pointer-events:none;border-radius:14px;border:2px solid #fb923c;box-shadow:0 0 0 6px rgba(251,146,60,.16),0 0 34px rgba(236,72,153,.5);opacity:0;transition:opacity .25s}
+.rf-ring.on{opacity:1;animation:rfRing 1.4s ease-in-out infinite}
+@keyframes rfRing{50%{box-shadow:0 0 0 12px rgba(251,146,60,.06),0 0 44px rgba(236,72,153,.65)}}
+.rf-ring span{position:absolute;top:calc(100% + 10px);right:0;white-space:nowrap;padding:.28rem .7rem;border-radius:.65rem;background:#fb923c;color:#1a0f05;font:800 11px Cairo,sans-serif}
+.rf-ring.up span{top:auto;bottom:calc(100% + 10px)}
+
+#rfMood{position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:0;transition:opacity 1.8s ease}
+#rfMood.on{opacity:1}
+#rfMood.m-calm{background:radial-gradient(900px 480px at 50% -10%,rgba(56,189,248,.17),transparent)}
+#rfMood.m-rain{background:radial-gradient(900px 520px at 50% -12%,rgba(59,130,246,.22),transparent),linear-gradient(180deg,rgba(30,58,138,.12),transparent 60%)}
+#rfMood.m-night{background:radial-gradient(900px 520px at 80% -10%,rgba(124,58,237,.24),transparent),linear-gradient(180deg,rgba(30,27,75,.3),transparent 70%)}
+#rfMood.m-warm{background:radial-gradient(900px 480px at 50% 112%,rgba(251,146,60,.26),transparent);animation:rfFire 3.2s ease-in-out infinite}
+@keyframes rfFire{50%{filter:brightness(1.25)}}
+#rfMood.m-mystery{background:radial-gradient(800px 500px at 15% 105%,rgba(20,184,166,.18),transparent),linear-gradient(180deg,rgba(6,78,59,.14),transparent 65%)}
+#rfMood.m-epic{background:radial-gradient(1000px 420px at 50% 108%,rgba(236,72,153,.26),transparent),radial-gradient(700px 360px at 50% 104%,rgba(251,146,60,.22),transparent)}
+#aiModal,#authModal{z-index:95!important}
+#rfFx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -388,6 +468,30 @@ body .inp:focus{border-color:#fb923c;box-shadow:0 0 0 3px rgba(251,146,60,.18)}
   <button data-t="split" onclick="tab('split')" class="btn w-full !py-3 text-right"><i class="fa-solid fa-scissors ml-2"></i> تقسيم PDF</button>
 </div></div>
 <div id="toast" class="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 px-5 py-3 rounded-2xl text-xs font-semibold opacity-0 pointer-events-none transition z-[70]"></div>
+
+<!-- ===== رفيق بيان ===== -->
+<div id="rfMood" aria-hidden="true"></div><canvas id="rfFx" aria-hidden="true"></canvas>
+<button id="rfFab" class="rf-fab" aria-label="افتح رفيق بيان" onclick="rfToggle()"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg><span class="rf-dot"></span></button>
+<div id="rfNudge" class="rf-nudge" role="button" tabindex="0"></div>
+<section id="rfPanel" class="rf-panel" role="dialog" aria-label="رفيق بيان">
+  <header class="rf-h">
+    <svg class="rf-av" viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg>
+    <div class="rf-ht"><b>رفيق بيان</b><span id="rfWhere"></span></div>
+    <button id="rfMoodBtn" class="rf-ib" title="جوّ الكتابة"><i class="fa-solid fa-cloud-moon"></i><span id="rfMoodName">الجو</span></button>
+    <button id="rfSnd" class="rf-ib" title="الصوت"><i class="fa-solid fa-volume-high"></i></button>
+    <button id="rfClr" class="rf-ib" title="محادثة جديدة"><i class="fa-solid fa-rotate-right"></i></button>
+    <button id="rfMin" class="rf-ib" title="تصغير"><i class="fa-solid fa-angles-down"></i></button>
+    <button id="rfX" class="rf-ib" title="إغلاق" aria-label="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+  </header>
+  <div id="rfMoods" class="rf-moods"></div>
+  <div id="rfLog" class="rf-log" aria-live="polite"></div>
+  <div id="rfQ" class="rf-q"></div>
+  <div class="rf-in">
+    <textarea id="rfTxt" rows="1" placeholder="اسألني عن الموقع، أو ناقشني في فصلك…" aria-label="رسالتك"></textarea>
+    <button id="rfSend" class="rf-send" aria-label="إرسال"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+</section>
+<div id="rfRing" class="rf-ring" aria-hidden="true"><span id="rfTip"></span></div>
 
 <script>
 /* ===== الإعدادات: ضع بيانات مشروعك من Supabase (Settings ← API) ===== */
@@ -1667,6 +1771,417 @@ addEventListener('offline', () => toast('لا يوجد اتصال، بعض ال�
     const lr = localStorage.getItem('bayan_last_r');
     const r = lr && await dbGet('r:' + lr); if (r) await loadReader(r.blob, lr, r.name);
   } catch (e) {}
+})();
+
+/* ================= رفيق بيان: رفيق كتابة مستقل ================= */
+(() => {
+'use strict';
+const TABS = { home: 'الرئيسية', studio: 'استوديو التأليف', reader: 'قراءة PDF / EPUB', trans: 'الترجمة', plot: 'لوح الحبكة', split: 'تقسيم PDF' };
+/* مفتاح: [التبويب، محدد العنصر، الاسم، الشرح] — يُستخدم للإضاءة وللشرح */
+const FEAT = {
+  header_ai: ['home', '[onclick^="aiOpen("]', 'إعدادات الذكاء الاصطناعي', 'ربط مفتاح API اختياري لسرعة وجودة أعلى، وبدونه يعمل الذكاء الاصطناعي مجانًا'],
+  account: ['home', '#authBox', 'الحساب', 'تسجيل الدخول يحفظ الرواية في حسابك وتتزامن بين أجهزتك'],
+  home_progress: ['home', '#hmBar', 'تقدّم اليوم', 'شريط يبيّن كم كتبت اليوم مقابل هدفك'],
+  book_info: ['studio', '#nTitle', 'بيانات الرواية', 'الاسم والمؤلف والتصنيف، وتظهر في الغلاف والتصدير'],
+  chapters: ['studio', '#chList', 'فهرس الفصول', 'إضافة فصل وترتيبه بالأسهم وحذفه، وبجانب كل فصل عدد كلماته'],
+  notes: ['studio', '#nNotes', 'ملاحظات العالم والشخصيات', 'مساحتك الخاصة لتدوين ما لا يجب أن تنساه'],
+  characters: ['studio', '#cName', 'أسماء الشخصيات', 'أضف الاسم ووصفًا قصيرًا ثم اضغط عليه لإدراجه في النص'],
+  chapter_title: ['studio', '#chTitle', 'عنوان الفصل', 'عنوان الفصل المفتوح'],
+  editor: ['studio', '#chBody', 'محرر الفصل', 'مكان كتابة الفصل، ويحفظ تلقائيًا'],
+  dialogue: ['studio', '#studio [onclick*="الحوار هنا"]', 'زر الحوار « »', 'يحيط المحدد بعلامتي الحوار'],
+  divider: ['studio', '#studio [onclick*="❦ ❦ ❦"]', 'الفاصل ❦', 'يضع فاصلًا بين المشاهد'],
+  spell: ['studio', '#studio [onclick^="spellCheck("]', 'التدقيق الإملائي', 'يفحص الأخطاء الشائعة ويقترح تصحيحها'],
+  reading_mode: ['studio', '#studio [onclick*="rdOpen("]', 'وضع القراءة', 'يعرض فصلك كصفحة قراءة هادئة مع قراءة صوتية'],
+  char_scan: ['studio', '#studio [onclick^="charScan("]', 'تحليل الشخصيات', 'يستخلص الشخصيات الواردة في الفصل وأهميتها'],
+  focus: ['studio', '#studio [onclick^="zen("]', 'وضع التركيز', 'يملأ الشاشة بالمحرر وحده'],
+  analyze: ['studio', '#studio [onclick^="wAnalyze("]', 'تحليل الأسلوب', 'طول الجمل ونسبة الحوار والكلمات المكررة'],
+  format: ['studio', '#studio [onclick^="wFmt("]', 'التنسيق', 'يضبط المسافات وعلامات الترقيم والاقتباس'],
+  snapshot: ['studio', '#studio [onclick^="snapSave("]', 'حفظ نسخة', 'لقطة من الفصل تستطيع الرجوع إليها'],
+  history: ['studio', '#studio [onclick^="snapList("]', 'سجل النسخ', 'استرجاع نسخ سابقة من الفصل'],
+  ai_write: ['studio', '#aiMode', 'الكتابة بالذكاء الاصطناعي', 'أكمل النص أو حسّن المحدد أو وسّعه أو حوّله لحوار'],
+  summary: ['studio', '#chSum', 'ملخص الفصل', 'سطر واحد يظهر في مخطط الرواية'],
+  check: ['studio', '#studio [onclick^="wCheck("]', 'فحص الكتابة', 'يرصد مشكلات الأسلوب في الفصل'],
+  outline: ['studio', '#studio [onclick^="wOutline("]', 'مخطط الرواية', 'خريطة الفصول وملخصاتها'],
+  sprint: ['studio', '#sprBtn', 'سباق الكتابة', 'مؤقت للكتابة المركّزة بلا توقف'],
+  shortcuts: ['studio', '#studio [onclick*="kbBox"]', 'الاختصارات', 'اختصارات لوحة المفاتيح للكتابة السريعة'],
+  find: ['studio', '#wf', 'البحث والاستبدال', 'بحث في كل فصول الرواية واستبدال جماعي'],
+  goal: ['studio', '#goal', 'هدف اليوم', 'حدّد عدد الكلمات اليومي وتابع تقدمك'],
+  export_epub: ['studio', '#studio [onclick^="exportEpub("]', 'تصدير EPUB', 'كتاب إلكتروني جاهز للقراءة والنشر'],
+  export_pdf: ['studio', '#studio [onclick^="exportNovel("]', 'تصدير PDF', 'رواية كاملة بغلاف وفصول'],
+  backup: ['studio', '#studio [onclick^="bkExport("]', 'نسخة احتياطية', 'ملف يحفظ كل شيء ويمكن استيراده لاحقًا'],
+  open_file: ['reader', '#reader [onclick*="pdfIn"]', 'فتح ملف', 'يفتح PDF أو EPUB ويتذكر آخر صفحة'],
+  view_mode: ['reader', '#vmBtn', 'طريقة العرض', 'تبديل بين العرض الطولي المتصل وصفحة واحدة'],
+  text_view: ['reader', '#txBtn', 'عرض النص وتصحيح الكلمات', 'استخراج نص الصفحة وتصحيح كلماته'],
+  tts: ['reader', '#ttsPlay', 'القراءة الصوتية', 'تقرأ الكتاب بصوتك المفضل وتلوّن الكلمة المقروءة'],
+  voice: ['reader', '#voice', 'اختيار الصوت', 'صوت القراءة، ويلزم صوت عربي في جهازك'],
+  speed: ['reader', '#rate', 'سرعة القراءة', 'من 0.75x إلى 2x'],
+  page_text: ['reader', '#ptxt', 'نص الصفحة القابل للتعديل', 'تعدّل نص الصفحة ويُحفظ لك'],
+  ai_fix: ['reader', '#reader [onclick^="aiFixPage("]', 'تصحيح بالذكاء الاصطناعي', 'يصلح أخطاء استخراج النص من PDF'],
+  bookmark: ['reader', '#reader [onclick^="bmToggle("]', 'العلامات', 'وضع علامة على الصفحة والعودة إليها'],
+  tr_pick: ['trans', '#trans .btn-p', 'اختيار ملف للترجمة', 'يقبل PDF وEPUB'],
+  tr_engine: ['trans', '#peng', 'محرك الترجمة', 'Google أو محلي أو الذكاء الاصطناعي الذي يقرأ الصفحة كصورة'],
+  tr_dir: ['trans', '#pdir', 'اتجاه الترجمة', 'إنجليزي إلى عربي أو العكس'],
+  tr_range: ['trans', '#pfrom', 'نطاق الصفحات', 'ترجم جزءًا من الكتاب فقط'],
+  tr_go: ['trans', '#pgo', 'بدء الترجمة', 'يبدأ أو يتابع من حيث توقف'],
+  tr_edit: ['trans', '#vtr', 'مراجعة الترجمة', 'عدّل الترجمة قبل بناء الملف'],
+  plot_premise: ['plot', '#plotPrem', 'فكرة الرواية', 'جملة أو جملتان تنطلق منهما الحبكة'],
+  plot_template: ['plot', '#ptpl', 'قوالب الحبكة', 'الفصول الثلاثة ورحلة البطل والنقاط السبع واللغز'],
+  plot_gen: ['plot', '#plot [onclick^="plotGen("]', 'توليد المخطط', 'يبني الذكاء الاصطناعي مخططًا من فكرتك'],
+  plot_cards: ['plot', '#plotList', 'بطاقات الحبكة', 'كل بطاقة مشهد، ولها حالة وترتيب وتحويل لفصل'],
+  plot_to_chapters: ['plot', '#plot [onclick^="plotAllCh("]', 'تحويل الكل إلى فصول', 'ينشئ فصلًا في الاستوديو لكل بطاقة'],
+  split_pdf: ['split', '#spf', 'استخراج صفحات', 'اقتطع نطاقًا من PDF ونزّله'],
+  quick_editor: ['split', '#edt', 'المحرر السريع', 'اكتب نصًا وصدّره PDF']
+};
+const MOODS = { calm: ['هدوء', null], rain: ['مطر', 'rain'], night: ['ليل', 'wind'], warm: ['دفء مدفأة', 'fire'], mystery: ['غموض', 'drone'], epic: ['ملحمة', 'wind'] };
+const RUN = { analyze_style: ['wAnalyze', 1], writing_check: ['wCheck', 1], outline: ['wOutline', 1], character_scan: ['charScan', 1], spell_check: ['spellCheck', 2], format_chapter: ['wFmt', 0], snapshot: ['snapSave', 0], focus_mode: ['zen', 0], sprint: ['sprint', 0], export_epub: ['exportEpub', 0], export_word: ['exportDoc', 0], export_txt: ['exportTxt', 0], export_pdf: ['exportNovel', 0], backup: ['bkExport', 0] };
+const SES = Date.now();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const P = $('rfPanel'), LOG = $('rfLog'), TXT = $('rfTxt'), FAB = $('rfFab'), Q = $('rfQ');
+let log = [], hist = [], busy = false, stopF = false, isOpen = false, autoPk = false, undos = [], lastW = 0, lastType = Date.now(), lastNudge = 0;
+
+/* ---------- أدوات مساعدة ---------- */
+const curTab = () => { const s = [...document.querySelectorAll('.sec')].find(x => !x.classList.contains('hidden')); return s ? s.id : 'home'; };
+const vis = sel => [...document.querySelectorAll(sel)].find(e => e.getClientRects().length);
+const wordsTot = () => { saveCh(); return chapters.reduce((a, c) => a + wc(c.content), 0); };
+const ok = (res, label, icon, undo) => ({ res, label, icon, undo });
+const flash = el => { el.classList.add('rf-flash'); setTimeout(() => el.classList.remove('rf-flash'), 1400); };
+function findCh(ref) {
+  if (ref == null || ref === '' || ref === 'current' || ref === 'الحالي') return chapters.find(x => x.id === active) || chapters[0];
+  const s = String(ref).trim(), n = parseInt(s, 10);
+  if (!isNaN(n) && String(n) === s) return chapters[n - 1] || null;
+  return chapters.find(x => x.title === s) || chapters.find(x => x.title.includes(s)) || null;
+}
+async function go(id) {
+  if (!TABS[id]) throw new Error('تبويب غير معروف: ' + id);
+  if (curTab() !== id) { $('moreSheet').classList.add('hidden'); tab(id); await sleep(380); }
+}
+async function openCh(c) { await go('studio'); if (active !== c.id) { saveCh(); active = c.id; loadCh(); renderList(); } }
+function pushUndo(c, prev) { undos.push({ id: c.id, prev, done: false }); return undos.length - 1; }
+function undoDo(i) {
+  const u = undos[i]; if (!u || u.done) return;
+  const c = chapters.find(x => x.id === u.id); if (!c) return toast('الفصل لم يعد موجودًا', 'err');
+  u.done = true;
+  if (c.id === active) { snapSave(true); setBody(u.prev); } else { c.content = u.prev; renderList(); autoSave(); }
+  toast('تم التراجع');
+}
+
+/* ---------- عرض الرسائل ---------- */
+function md(s) {
+  const L = esc(s).replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/([\d\u0660-\u0669]+(?:[.,٫][\d\u0660-\u0669])?)\s*\/\s*(?:10|١٠)(?![\d\u0660-\u0669])/g, '<span class="cs">$1/10</span>').split('\n');
+  let out = '', list = null; const close = () => { if (list) { out += '</' + list + '>'; list = null; } };
+  for (const l0 of L) {
+    const l = l0.trim(); let m;
+    if (!l) { close(); continue; }
+    if ((m = /^(?:[-•*]|[\d\u0660-\u0669]+[.)])\s+(.*)$/.exec(l))) { const t = /^[\d\u0660-\u0669]/.test(l) ? 'ol' : 'ul'; if (list !== t) { close(); out += '<' + t + '>'; list = t; } out += '<li>' + m[1] + '</li>'; continue; }
+    close();
+    if ((m = /^#{1,3}\s+(.*)$/.exec(l))) { out += '<h4>' + m[1] + '</h4>'; continue; }
+    out += '<p>' + l + '</p>';
+  }
+  close(); return out;
+}
+function node(it) {
+  const d = document.createElement('div');
+  if (it.r === 'u') { d.className = 'rf-u'; d.textContent = it.t; }
+  else if (it.r === 'a') { d.className = 'rf-a'; d.innerHTML = md(it.t); }
+  else {
+    d.className = 'rf-t'; d.innerHTML = '<i class="fa-solid fa-' + esc(it.i || 'wand-magic-sparkles') + '"></i><span>' + esc(it.t) + '</span>';
+    if (it.u != null && it.s === SES && undos[it.u] && !undos[it.u].done) { const b = document.createElement('button'); b.textContent = 'تراجع'; b.onclick = () => { undoDo(it.u); b.remove(); }; d.append(b); }
+  }
+  return d;
+}
+const toEnd = () => { LOG.scrollTop = LOG.scrollHeight; };
+const saveChat = () => { try { localStorage.setItem('bayan_chat', JSON.stringify({ log: log.slice(-60), hist: hist.slice(-14).map(m => ({ role: m.role, content: m.content.slice(0, 2500) })) })); } catch (e) {} };
+function addLog(it) { if (it.r === 't') it.s = SES; log.push(it); const ty = $('rfTy'); const n = node(it); ty ? LOG.insertBefore(n, ty) : LOG.append(n); toEnd(); saveChat(); }
+function showTy(on) { let t = $('rfTy'); if (on && !t) { t = document.createElement('div'); t.id = 'rfTy'; t.className = 'rf-ty'; t.innerHTML = '<i></i><i></i><i></i>'; LOG.append(t); toEnd(); } else if (!on && t) t.remove(); }
+function setQ(list) { Q.innerHTML = ''; (list || []).forEach(t => { const b = document.createElement('button'); b.textContent = t.l; b.onclick = () => (t.f ? t.f() : send(t.q || t.l)); Q.append(b); }); }
+function peek(on, auto) {
+  P.classList.toggle('peek', on); const b = $('rfMin');
+  b.innerHTML = on ? '<i class="fa-solid fa-angles-up"></i>' : '<i class="fa-solid fa-angles-down"></i>'; b.title = on ? 'تكبير' : 'تصغير';
+  autoPk = !!(on && auto);
+}
+function where() { $('rfWhere').textContent = 'أنت الآن في: ' + TABS[curTab()]; }
+
+/* ---------- الإضاءة على الأدوات ---------- */
+const RING = $('rfRing'), TIP = $('rfTip'); let ringEl = null, ringT = 0, ringRaf = 0;
+function ringTrack() {
+  if (!ringEl) return; const r = ringEl.getBoundingClientRect(), pd = 6;
+  Object.assign(RING.style, { left: r.left - pd + 'px', top: r.top - pd + 'px', width: r.width + pd * 2 + 'px', height: r.height + pd * 2 + 'px' });
+  RING.classList.toggle('up', r.bottom > innerHeight * .62); ringRaf = requestAnimationFrame(ringTrack);
+}
+function ringOff() { RING.classList.remove('on'); ringEl = null; cancelAnimationFrame(ringRaf); }
+function ringOn(el, label, ms) { ringEl = el; TIP.textContent = label; RING.classList.add('on'); cancelAnimationFrame(ringRaf); ringTrack(); clearTimeout(ringT); ringT = setTimeout(ringOff, ms); }
+
+/* ---------- الجو: لون وجزيئات وصوت ---------- */
+let mood = localStorage.getItem('bayan_mood') || 'off', muted = localStorage.getItem('bayan_mood_mute') === '1';
+const FX = { c: $('rfFx'), p: [], m: '', raf: 0, w: 0, h: 0 }, fxx = FX.c.getContext('2d'), RM = matchMedia('(prefers-reduced-motion: reduce)');
+function fxSize() { const d = Math.min(devicePixelRatio || 1, 1.5); FX.w = innerWidth; FX.h = innerHeight; FX.c.width = FX.w * d; FX.c.height = FX.h * d; fxx.setTransform(d, 0, 0, d, 0, 0); }
+function fxSet(k) {
+  cancelAnimationFrame(FX.raf); FX.m = k; fxSize(); const W = FX.w, H = FX.h, R = Math.random, n = W < 600 ? .6 : 1; FX.p = [];
+  if (k === 'rain') for (let i = 0; i < 110 * n; i++) FX.p.push({ x: R() * W, y: R() * H, l: 12 + R() * 18, v: 11 + R() * 8, a: .1 + R() * .22 });
+  else if (k === 'night') for (let i = 0; i < 110 * n; i++) FX.p.push({ x: R() * W, y: R() * H * .8, r: .4 + R() * 1.3, t: R() * 6.28, s: .012 + R() * .03 });
+  else if (k === 'warm') for (let i = 0; i < 45 * n; i++) FX.p.push({ x: R() * W, y: R() * H, r: .8 + R() * 1.8, v: .3 + R() * .7, t: R() * 6.28 });
+  else if (k === 'mystery') for (let i = 0; i < 6; i++) FX.p.push({ x: R() * W, y: R() * H, r: 180 + R() * 220, v: (R() - .5) * .25 });
+  else if (k === 'epic') for (let i = 0; i < 55 * n; i++) FX.p.push({ x: R() * W, y: R() * H, r: .6 + R() * 1.6, v: .15 + R() * .4, t: R() * 6.28 });
+  if (!FX.p.length) { fxx.clearRect(0, 0, FX.w, FX.h); return; } fxDraw();
+}
+function fxDraw() {
+  const x = fxx, W = FX.w, H = FX.h, k = FX.m; x.clearRect(0, 0, W, H);
+  for (const p of FX.p) {
+    if (k === 'rain') { x.strokeStyle = 'rgba(165,200,255,' + p.a + ')'; x.lineWidth = 1; x.beginPath(); x.moveTo(p.x, p.y); x.lineTo(p.x - p.l * .18, p.y + p.l); x.stroke(); p.y += p.v; p.x -= p.v * .18; if (p.y > H || p.x < -20) { p.y = -20; p.x = Math.random() * (W + 60); } }
+    else if (k === 'night') { p.t += p.s; x.fillStyle = 'rgba(224,214,255,' + (.25 + .55 * Math.abs(Math.sin(p.t))) + ')'; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.fill(); }
+    else if (k === 'warm' || k === 'epic') { p.t += k === 'warm' ? .03 : .02; p.y -= p.v; p.x += Math.sin(p.t) * .35; if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; } x.fillStyle = (k === 'warm' ? 'rgba(251,146,60,' : 'rgba(253,224,160,') + (.15 + .45 * Math.abs(Math.sin(p.t))) + ')'; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.283); x.fill(); }
+    else if (k === 'mystery') { p.x += p.v; if (p.x > W + p.r) p.x = -p.r; if (p.x < -p.r) p.x = W + p.r; const g = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); g.addColorStop(0, 'rgba(94,234,212,.07)'); g.addColorStop(1, 'rgba(94,234,212,0)'); x.fillStyle = g; x.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2); }
+  }
+  if (!RM.matches) FX.raf = requestAnimationFrame(fxDraw);
+}
+addEventListener('resize', () => { if (mood !== 'off') fxSet(mood); });
+let AC = null, SN = null;
+function stopSound() { if (!SN) return; SN.timers.forEach(clearInterval); SN.nodes.forEach(n => { try { n.stop && n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} }); SN = null; }
+function sound(k) {
+  stopSound(); const kind = k !== 'off' && MOODS[k] && MOODS[k][1]; if (!kind || muted) return;
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); AC.resume(); } catch (e) { return; }
+  const g = AC.createGain(), nodes = [g], timers = [], now = AC.currentTime; g.gain.setValueAtTime(0, now); g.connect(AC.destination);
+  const noise = () => { const b = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; const s = AC.createBufferSource(); s.buffer = b; s.loop = true; nodes.push(s); return s; };
+  const bq = (t, f) => { const q = AC.createBiquadFilter(); q.type = t; q.frequency.value = f; nodes.push(q); return q; };
+  if (kind === 'rain') { const s = noise(), a = bq('highpass', 1400), b = bq('lowpass', 7000); s.connect(a); a.connect(b); b.connect(g); s.start(); g.gain.linearRampToValueAtTime(.07, now + 2.5); }
+  else if (kind === 'wind') { const s = noise(), a = bq('lowpass', 520), l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = .09; lg.gain.value = .025; l.connect(lg); lg.connect(g.gain); nodes.push(l, lg); s.connect(a); a.connect(g); s.start(); l.start(); g.gain.linearRampToValueAtTime(.05, now + 3); }
+  else if (kind === 'fire') { const s = noise(), a = bq('lowpass', 420), c = noise(), cg = AC.createGain(), ch = bq('highpass', 2500); cg.gain.value = 0; nodes.push(cg); s.connect(a); a.connect(g); c.connect(ch); ch.connect(cg); cg.connect(g); s.start(); c.start(); g.gain.linearRampToValueAtTime(.06, now + 2.5); timers.push(setInterval(() => { const t = AC.currentTime; cg.gain.cancelScheduledValues(t); cg.gain.setValueAtTime(.5 + Math.random() * .8, t); cg.gain.exponentialRampToValueAtTime(.001, t + .05 + Math.random() * .08); }, 380)); }
+  else if (kind === 'drone') { const lp = bq('lowpass', 240); [55, 82.6, 110.4].forEach((f, i) => { const o = AC.createOscillator(); o.type = 'sine'; o.frequency.value = f; o.detune.value = i * 4; o.connect(lp); o.start(); nodes.push(o); }); lp.connect(g); g.gain.linearRampToValueAtTime(.05, now + 3); }
+  SN = { nodes, timers };
+}
+function moodUi() {
+  $('rfMoodName').textContent = mood === 'off' ? 'الجو' : MOODS[mood][0]; $('rfMoodBtn').classList.toggle('on', mood !== 'off');
+  $('rfMoods').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.k === mood));
+  $('rfSnd').innerHTML = '<i class="fa-solid fa-volume-' + (muted ? 'xmark' : 'high') + '"></i>';
+}
+function setMood(k, withSound = true) {
+  if (k !== 'off' && !MOODS[k]) throw new Error('جو غير معروف: ' + k);
+  mood = k; lsSet('bayan_mood', k); $('rfMood').className = k === 'off' ? '' : 'on m-' + k; fxSet(k === 'off' ? '' : k); if (withSound) sound(k); moodUi();
+}
+(() => {
+  const box = $('rfMoods'); Object.entries(MOODS).concat([['off', ['بدون']]]).forEach(([k, v]) => { const b = document.createElement('button'); b.dataset.k = k; b.textContent = v[0]; b.onclick = () => setMood(k); box.append(b); });
+  $('rfMoodBtn').onclick = () => { box.style.display = box.style.display === 'flex' ? 'none' : 'flex'; };
+  $('rfSnd').onclick = () => { muted = !muted; lsSet('bayan_mood_mute', muted ? '1' : '0'); if (muted) stopSound(); else sound(mood); moodUi(); };
+  if (mood !== 'off' && !MOODS[mood]) mood = 'off';
+  setMood(mood, false);
+  addEventListener('pointerdown', () => { if (mood !== 'off' && !muted && !SN) sound(mood); }, { once: true });
+})();
+
+/* ---------- الأدوات التي يستدعيها المساعد ---------- */
+const TOOLS = {
+  goto_tab: async a => { await go(a.tab); peek(true, true); return ok('فُتح تبويب ' + TABS[a.tab], 'انتقلتُ إلى ' + TABS[a.tab], 'compass'); },
+  spotlight: async a => {
+    const f = FEAT[a.feature]; if (!f) throw new Error('مفتاح ميزة غير معروف: ' + a.feature);
+    await go(f[0]); peek(true, true); await sleep(120);
+    const el = vis(f[1]); if (!el) throw new Error('العنصر غير ظاهر الآن');
+    if ($('studio').classList.contains('zen')) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    else scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + scrollY - innerHeight * .22), behavior: 'smooth' });
+    await sleep(650); ringOn(el, f[2], 5200); await sleep(1600);
+    return ok('أُضيء «' + f[2] + '»: ' + f[3], 'أريتُك: ' + f[2], 'location-crosshairs');
+  },
+  overview: async () => {
+    saveCh(); const all = chapters.map((c, i) => (i + 1) + '. «' + c.title + '» — ' + wc(c.content) + ' كلمة' + (c.id === active ? ' (المفتوح)' : '') + (c.summary ? ' — ملخص: ' + c.summary : '') + (c.review ? ' — آخر تقييم: ' + c.review.text.slice(0, 160) : '')), L = (all.length > 40 ? all.slice(0, 20).concat(['…'], all.slice(-20)) : all).join('\n');
+    const pl = plot.length ? plot.slice(0, 30).map((p, i) => (i + 1) + '. ' + p.t + ' [' + ['فكرة', 'قيد الكتابة', 'مكتمل'][p.s || 0] + ']' + (p.d ? ' — ' + p.d.split('\n')[0].slice(0, 80) : '')).join('\n') : '(لوح الحبكة فارغ)';
+    return ok('الرواية: «' + $('nTitle').value + '» · ' + $('nGenre').value + ' · ' + $('nAuthor').value + '\nالفصول:\n' + L + '\nالشخصيات: ' + (chars.map(x => x.n + (x.d ? ' (' + x.d + ')' : '')).join('، ') || '—') + '\nالملاحظات: ' + ($('nNotes').value.slice(0, 400) || '—') + '\nلوح الحبكة:\n' + pl + '\nهدف اليوم: ' + goal + ' كلمة', 'اطّلعتُ على بنية روايتك', 'eye');
+  },
+  read_chapter: async a => {
+    saveCh(); const c = findCh(a.chapter); if (!c) throw new Error('الفصل غير موجود'); const from = Math.max(0, parseInt(a.from, 10) || 0), T = c.content || '', part = T.slice(from, from + 6000), left = T.length - from - part.length;
+    return ok('«' + c.title + '» (' + wc(T) + ' كلمة، ' + T.length + ' حرفًا). الجزء من ' + from + ':\n' + part + (left > 0 ? '\n[بقي ' + left + ' حرفًا — تابع بـ from=' + (from + part.length) + ']' : '\n[نهاية الفصل]'), from ? 'تابعتُ قراءة «' + c.title + '»' : 'قرأتُ «' + c.title + '»', 'book-open');
+  },
+  open_chapter: async a => { const c = findCh(a.chapter); if (!c) throw new Error('الفصل غير موجود'); await openCh(c); return ok('فُتح «' + c.title + '»', 'فتحتُ «' + c.title + '»', 'folder-open'); },
+  add_chapter: async a => {
+    await go('studio'); const n = chapters.length; addCh(); const c = chapters[chapters.length - 1];
+    if (a.title && a.title.trim()) { c.title = a.title.trim(); $('chTitle').value = c.title; saveCh(); renderList(); autoSave(); }
+    return ok('أُنشئ الفصل رقم ' + (n + 1) + ' بعنوان «' + c.title + '» وهو مفتوح الآن', 'أضفتُ فصلًا: ' + c.title, 'plus');
+  },
+  append_text: async a => {
+    const c = findCh(a.chapter); if (!c) throw new Error('الفصل غير موجود'); const t = (a.text || '').replace(/\r/g, '').trim(); if (!t) throw new Error('النص فارغ');
+    await openCh(c); saveCh(); const prev = c.content; snapSave(true); const nx = prev.trim() ? prev.replace(/\s+$/, '') + '\n\n' + t : t; setBody(nx); const ta = $('chBody'); ta.scrollTop = ta.scrollHeight; flash(ta);
+    return ok('أُضيفت ' + wc(t) + ' كلمة إلى «' + c.title + '» (صار ' + wc(nx) + ' كلمة)', 'كتبتُ ' + wc(t) + ' كلمة في «' + c.title + '»', 'pen-nib', pushUndo(c, prev));
+  },
+  replace_text: async a => {
+    const f = a.find || '', r = a.replace == null ? '' : String(a.replace); if (!f) throw new Error('حدّد النص المراد استبداله'); const c = findCh(a.chapter); if (!c) throw new Error('الفصل غير موجود');
+    await openCh(c); saveCh(); const i = c.content.indexOf(f); if (i < 0) return ok('النص غير موجود حرفيًا في الفصل. اقرأ الفصل وانسخ العبارة كما هي.');
+    const cnt = c.content.split(f).length - 1, prev = c.content; snapSave(true); setBody(prev.slice(0, i) + r + prev.slice(i + f.length)); flash($('chBody'));
+    return ok('استُبدل أول موضع (من ' + cnt + ' موضع)', 'عدّلتُ مقطعًا في «' + c.title + '»', 'pen', pushUndo(c, prev));
+  },
+  set_summary: async a => { const c = findCh(a.chapter); if (!c) throw new Error('الفصل غير موجود'); saveCh(); c.summary = String(a.text || '').slice(0, 200); if (c.id === active) $('chSum').value = c.summary; autoSave(); return ok('حُفظ ملخص «' + c.title + '»', 'لخّصتُ «' + c.title + '»', 'align-right'); },
+  save_review: async a => { const c = findCh(a.chapter); if (!c) throw new Error('الفصل غير موجود'); c.review = { t: Date.now(), text: String(a.text || '').slice(0, 800) }; autoSave(); return ok('حُفظ التقييم', 'حفظتُ تقييم «' + c.title + '»', 'star'); },
+  add_character: async a => {
+    const n = (a.name || '').trim(); if (!n) throw new Error('الاسم مطلوب'); if (chars.some(x => x.n === n)) return ok('الشخصية موجودة مسبقًا');
+    chars.push({ n, d: (a.desc || '').trim() }); cRender(); autoSave(); return ok('أُضيفت الشخصية ' + n, 'أضفتُ شخصية: ' + n, 'user-plus');
+  },
+  append_notes: async a => { const t = (a.text || '').trim(); if (!t) throw new Error('النص فارغ'); const e = $('nNotes'); e.value = (e.value.trim() ? e.value.replace(/\s+$/, '') + '\n' : '') + t; autoSave(); return ok('أُضيفت الملاحظة', 'دوّنتُ ملاحظة', 'note-sticky'); },
+  plot_premise: async a => { await go('plot'); $('plotPrem').value = String(a.text || '').slice(0, 400); autoSave(); return ok('كُتبت فكرة الرواية في لوح الحبكة', 'كتبتُ فكرة الرواية', 'lightbulb'); },
+  plot_add: async a => { await go('plot'); plot.push({ id: newPid(), t: String(a.title || 'بطاقة جديدة').slice(0, 80), d: String(a.desc || ''), s: 0, ch: 0 }); plotRender(); plotSync(); return ok('أُضيفت البطاقة رقم ' + plot.length, 'أضفتُ بطاقة حبكة: ' + (a.title || ''), 'diagram-project'); },
+  plot_update: async a => {
+    await go('plot'); const i = (parseInt(a.index, 10) || 0) - 1, c = plot[i]; if (!c) throw new Error('البطاقة غير موجودة'); if (a.title) c.t = String(a.title).slice(0, 80); if (a.desc != null) c.d = String(a.desc);
+    const si = ['فكرة', 'قيد الكتابة', 'مكتمل'].indexOf(a.status); if (si >= 0) c.s = si; plotRender(); plotSync(); return ok('حُدّثت البطاقة ' + (i + 1), 'حدّثتُ البطاقة ' + (i + 1), 'pen-to-square');
+  },
+  run_tool: async a => {
+    const r = RUN[a.name]; if (!r) throw new Error('أداة غير معروفة: ' + a.name); await go('studio'); peek(true, true); await sleep(150);
+    await Promise.resolve(window[r[0]]()); if (!r[1]) return ok('نُفّذت الأداة ' + a.name, 'شغّلتُ: ' + a.name.replace(/_/g, ' '), 'wrench');
+    await sleep(500); const t = ($(r[1] === 2 ? 'spOut' : 'chOut').innerText || '').trim().slice(0, 1500);
+    return ok('نتيجة ' + a.name + ':\n' + (t || '(لا نتائج ظاهرة)'), 'شغّلتُ: ' + a.name.replace(/_/g, ' '), 'wrench');
+  },
+  set_goal: async a => { const n = Math.max(50, parseInt(a.words, 10) || 0); if (!n) throw new Error('رقم غير صالح'); goal = n; lsSet('bayan_goal', n); $('goal').value = n; stats(); return ok('صار هدف اليوم ' + n + ' كلمة', 'ضبطتُ هدف اليوم: ' + n, 'bullseye'); },
+  set_mood: async a => { setMood(a.mood); return ok(a.mood === 'off' ? 'أُطفئ الجو' : 'فُعّل جو «' + MOODS[a.mood][0] + '»' + (muted ? ' (الصوت مكتوم)' : ''), a.mood === 'off' ? 'أطفأتُ الجو' : 'هيّأتُ جو: ' + MOODS[a.mood][0], 'cloud-moon'); },
+  read_reader: async a => {
+    if (typeof pdf === 'undefined' || !pdf) return ok('لا يوجد ملف مفتوح في القارئ. اطلب من المستخدم فتح ملف من تبويب القراءة.', 'القارئ فارغ', 'book-open');
+    const n = Math.min(pdf.numPages, Math.max(1, parseInt(a.page, 10) || pg)); let t = edits[n];
+    if (t == null) { const p = await pdf.getPage(n); t = pageText(await p.getTextContent()); }
+    return ok('«' + (rdName || 'الملف') + '» — الصفحة ' + n + ' من ' + pdf.numPages + (n === pg ? ' (المفتوحة)' : '') + ':\n' + (t || '(لا نص قابل للاستخراج، قد تكون صورة)').slice(0, 3500), 'قرأتُ صفحة ' + n, 'book-open-reader');
+  },
+  goto_page: async a => { await go('reader'); if (typeof pdf === 'undefined' || !pdf) return ok('لا يوجد ملف مفتوح'); await goPg(a.page); return ok('فُتحت الصفحة ' + pg, 'ذهبتُ إلى الصفحة ' + pg, 'arrow-right-to-bracket'); },
+  set_translate: async a => {
+    await go('trans'); if (['en|ar', 'ar|en'].includes(a.dir)) $('pdir').value = a.dir; if (['auto', 'gt', 'local', 'ai'].includes(a.engine)) $('peng').value = a.engine;
+    if (a.from) $('pfrom').value = parseInt(a.from, 10) || ''; if (a.to) $('pto').value = parseInt(a.to, 10) || ''; if (typeof trShow === 'function') trShow();
+    return ok('ضُبطت خيارات الترجمة. اختيار الملف وبدء الترجمة يتمّان من المستخدم', 'ضبطتُ خيارات الترجمة', 'language');
+  }
+};
+
+/* ---------- تعليمات المساعد ---------- */
+function sys() {
+  saveCh(); const c = chapters.find(x => x.id === active), tb = curTab(), ta = $('chBody'); let sel = '';
+  try { if (tb === 'studio' && ta.selectionEnd > ta.selectionStart) sel = ta.value.slice(ta.selectionStart, ta.selectionEnd).slice(0, 600); } catch (e) {}
+  const feats = Object.entries(FEAT).map(([k, f]) => '- ' + k + ' (' + TABS[f[0]] + '): ' + f[2] + ' — ' + f[3]).join('\n');
+  return [
+    'أنت «رفيق بيان»: رفيق كتابة ومحرر أدبي يعيش داخل منصة «بيان» لكتابة الروايات وقراءتها وترجمتها. تكتب بعربية فصحى دافئة وواضحة.',
+    '',
+    '## شخصيتك',
+    '- محرر يحب النص ويحترم صاحبه. صادق بلطف: ترى ما نجح قبل ما أخفق، ولا تجامل ولا تقسو.',
+    '- موجز لأن الشاشة غالبًا صغيرة: الرد العادي من جملتين إلى أربع. التقييم الكامل أطول لكنه منظّم.',
+    '- لا تفتتح بمجاملات فارغة ولا تكثر الاعتذار ولا تكرر اسمك.',
+    '',
+    '## إرادتك واستقلالك',
+    '- أنت مستقل: تقرر بنفسك متى تنتقل بين التبويبات وتفتح الفصول وتقرأ وتحلل وتُضيء الأدوات وتضبط الجو، ولا تستأذن في ذلك. قل في جملة قصيرة ما ستفعله ثم افعله.',
+    '- بادر: إن رأيت أن الكاتب يحتاج أداة أو جوًا أو فكرة فاقترحها، وافعل ما لا يغيّر نصّه.',
+    '- الكتابة داخل نص الكاتب (append_text وreplace_text) لا تفعلها إلا إذا طلبها صراحة أو وافق على اقتراحك. كل تعديل يظهر معه زر «تراجع». أما بطاقات الحبكة والشخصيات والملاحظات فأضفها بحرية متى أفادت، مع إخباره.',
+    '- لا تحذف شيئًا من عمل الكاتب أبدًا.',
+    '',
+    '## الجو',
+    '- «الجو» جزء من عملك: عند بدء مشهد أو ذكر مزاج (حزن، رعب، حنين، ملحمة…) اختر الأنسب بـ set_mood وعلّق بجملة شاعرية قصيرة، أو off إن لم يناسب شيء. لا تغيّر الجو أكثر من مرة في الرد الواحد.',
+    '- كن حاضرًا بروح الكاتب: شجّعه إذا تقدّم، وهدّئه إذا تعثّر، واسأله عمّا يريد أن يشعر به القارئ.',
+    '',
+    '## تقييم الفصول',
+    '- لتقييم فصل: اقرأه كاملًا بـ read_chapter (تابع بـ from حتى «نهاية الفصل») ثم أجب بهذا الترتيب: «التقييم العام: س/10»، ثم محاور بدرجة من 10 لكل محور في سطر (الافتتاحية والخطّاف، الإيقاع، الشخصيات والحوار، اللغة والأسلوب، الصراع والتقدّم)، ثم «ما نجح» مع استشهاد بعبارة قصيرة من النص (أقل من 8 كلمات)، ثم «ما يعيقه» بدقة، ثم ثلاث نصائح قابلة للتنفيذ، ثم سؤال واحد يحفّزه على المراجعة. بعد ذلك استدعِ save_review بخلاصة من سطرين.',
+    '- عاير بصدق: المسودات الأولى تقع عادة بين 5 و7. لا ترفع الدرجة مجاملة ولا تخفضها قسوة. إن كان الفصل أقل من 80 كلمة فاطلب منه المزيد بلطف بدل التقييم.',
+    '- لتقييم عدة فصول: ابدأ بـ overview ثم اقرأ كل فصل، وقدّم درجة موجزة لكل فصل ثم قراءة شاملة لمسار الرواية.',
+    '',
+    '## الجولة والشرح',
+    '- في الجولة: انتقل بين التبويبات وأضئ من 3 إلى 5 أدوات فقط بـ spotlight، وقبل كل إضاءة اكتب جملة تشرح الأداة، ثم اسأل أي تبويب يريد التعمق فيه.',
+    '- عند السؤال عن أداة أو مكانها: اشرحها بجملة وأضئها له بـ spotlight.',
+    '',
+    '## ميزات الموقع (مفاتيح spotlight)',
+    feats,
+    '- التبويبات: home الرئيسية، studio استوديو التأليف، reader قراءة PDF/EPUB، trans الترجمة، plot لوح الحبكة، split تقسيم PDF.',
+    '- الأجواء المتاحة: calm هدوء، rain مطر، night ليل، warm دفء مدفأة، mystery غموض، epic ملحمة، off إطفاء.',
+    '',
+    '## الأدوات',
+    'صيغة الاستدعاء: <tool name="الاسم">{JSON}</tool>. للنصوص الطويلة: <tool name="append_text" chapter="current">النص الخام هنا</tool>. للأدوات بلا معاملات: <tool name="overview"/>.',
+    '- goto_tab {"tab":"home|studio|reader|trans|plot|split"}',
+    '- spotlight {"feature":"مفتاح من القائمة أعلاه"}',
+    '- overview — بنية الرواية: الفصول والشخصيات والملاحظات واللوح',
+    '- read_chapter {"chapter":"current|رقم|عنوان","from":0} — يعيد 6000 حرف في كل مرة',
+    '- open_chapter {"chapter":"..."} · add_chapter {"title":"..."}',
+    '- append_text (chapter + النص في الجسم) · replace_text {"chapter":"current","find":"نص حرفي","replace":"البديل"}',
+    '- set_summary {"chapter":"current","text":"..."} · save_review {"chapter":"current","text":"..."}',
+    '- add_character {"name":"...","desc":"..."} · append_notes {"text":"..."}',
+    '- plot_premise {"text":"..."} · plot_add {"title":"...","desc":"..."} · plot_update {"index":1,"title":"...","desc":"...","status":"فكرة|قيد الكتابة|مكتمل"}',
+    '- run_tool {"name":"analyze_style|writing_check|outline|character_scan|spell_check|format_chapter|snapshot|focus_mode|sprint|export_epub|export_word|export_txt|export_pdf|backup"} — التصدير والتنسيق لا تشغّلهما إلا بطلب المستخدم',
+    '- set_goal {"words":500} · set_mood {"mood":"rain"}',
+    '- read_reader {"page":3} · goto_page {"page":3} · set_translate {"dir":"en|ar","engine":"auto|gt|local|ai","from":1,"to":10}',
+    '',
+    '## قواعد التنفيذ',
+    '- يمكنك وضع عدة أدوات في رد واحد؛ تُنفَّذ بالترتيب، وتصلك النتائج في رسالة تبدأ بـ [نتائج الأدوات] فتابع منها. عند انتهاء المهمة اكتب ردك النهائي بلا أي أداة.',
+    '- لا تدّعِ أنك فعلت شيئًا دون استدعاء أداته، ولا تخترع نتائج، ولا تنسخ نتائج الأدوات للمستخدم حرفيًا. لا تقرأ الفصل نفسه مرتين.',
+    '- لا HTML ولا جداول. استخدم **التأكيد** والقوائم النقطية فقط.',
+    '- لا تفعل بنفسك ما يتطلب المستخدم: اختيار ملف للترجمة أو فتح ملف في القارئ أو تسجيل الدخول.',
+    '',
+    '## الحالة الآن',
+    'التبويب المفتوح: ' + TABS[tb] + '. الرواية: «' + $('nTitle').value + '» (' + $('nGenre').value + ') بقلم ' + $('nAuthor').value + '. عدد الفصول: ' + chapters.length + '. الفصل المفتوح: «' + (c ? c.title : '') + '» (' + (c ? wc(c.content) : 0) + ' كلمة).' + (sel ? '\nالمحدد في المحرر الآن: «' + sel + '»' : '') + '\nالجو الحالي: ' + (mood === 'off' ? 'لا شيء' : MOODS[mood][0]) + '.'
+  ].join('\n');
+}
+
+/* ---------- الحلقة الذاتية ---------- */
+function parse(raw) {
+  let t = raw.replace(/<tool\b([^>]*?)\/>/g, '<tool$1></tool>'); const calls = [];
+  t = t.replace(/<tool\s+name="([a-z_]+)"([^>]*)>([\s\S]*?)<\/tool>/g, (_, n, at, b) => {
+    const a = {}; at.replace(/(\w+)="([^"]*)"/g, (_, k, v) => { a[k] = v; return ''; }); b = b.trim();
+    if (b) { if (b[0] === '{') { try { Object.assign(a, JSON.parse(b)); } catch (e) { a.text = b; } } else a.text = b; }
+    calls.push({ n, a }); return '';
+  });
+  t = t.replace(/<tool[\s\S]*$/, '').replace(/^```\w*\s*$/gm, '').trim(); return { prose: t, calls };
+}
+async function exec(c) {
+  const f = TOOLS[c.n]; if (!f) return c.n + ': أداة غير معروفة';
+  try { const r = await f(c.a || {}); if (r.label) addLog({ r: 't', i: r.icon, t: r.label, u: r.undo }); return c.n + ': ' + r.res; }
+  catch (e) { addLog({ r: 't', i: 'triangle-exclamation', t: 'تعذّر: ' + c.n.replace(/_/g, ' ') }); return c.n + ': خطأ — ' + errMsg(e); }
+}
+function msgsFor() {
+  let h = hist.slice(-14); while (h.length && h[0].role !== 'user') h = h.slice(1);
+  const isR = m => m.content.startsWith('[نتائج الأدوات]'), last = h.map(isR).lastIndexOf(true);
+  return [{ role: 'system', content: sys() }].concat(h.map((m, i) => ({ role: m.role, content: isR(m) && i !== last ? m.content.slice(0, 500) + '…' : m.content })));
+}
+function setBusy(b) { busy = b; $('rfSend').innerHTML = b ? '<i class="fa-solid fa-stop"></i>' : '<i class="fa-solid fa-paper-plane"></i>'; $('rfSend').setAttribute('aria-label', b ? 'إيقاف' : 'إرسال'); }
+async function loop() {
+  setBusy(true); stopF = false; showTy(true);
+  try {
+    let fix = 0;
+    for (let step = 0; step < 7 && !stopF; step++) {
+      let raw; try { raw = await aiChat(msgsFor()); } catch (e) { showTy(false); addLog({ r: 'a', t: 'تعذّر الاتصال بالذكاء الاصطناعي المجاني. يحدث هذا غالبًا عند فتح الملف من مجلد التنزيلات في الجوال، أو عند ازدحام الخدمة.\n**الحل الأسرع:** أضف مفتاحًا مجانيًا (Gemini أو Groq أو OpenRouter) من إعدادات الذكاء الاصطناعي، أو افتح الصفحة من استضافة بدل الملف المحلي.' }); setQ([{ l: 'افتح الإعدادات', f: () => { setQ([]); toggle(false); aiOpen(); } }, { l: 'أعد المحاولة', f: () => { setQ([]); if (!busy) loop(); } }]); break; }
+      const { prose, calls } = parse(raw || ''); hist.push({ role: 'assistant', content: raw || '' });
+      if (prose) { showTy(false); addLog({ r: 'a', t: prose }); showTy(true); }
+      if (!calls.length && !prose && fix < 2) { fix++; hist.push({ role: 'user', content: '[نتائج الأدوات]\nخطأ: ردّك فارغ أو صيغة الأداة غير صحيحة. اكتب جملة قصيرة للمستخدم ثم استخدم <tool name="الاسم">{JSON}</tool> وأغلق الوسم.' }); continue; }
+      if (!calls.length) { if (!prose) { showTy(false); addLog({ r: 'a', t: 'لم أستطع صياغة رد، أعد المحاولة بصياغة أخرى.' }); } break; }
+      const res = []; for (const c of calls.slice(0, 6)) { if (stopF) break; res.push(await exec(c)); }
+      hist.push({ role: 'user', content: '[نتائج الأدوات]\n' + res.join('\n---\n') + '\n(تابع مهمتك. إن اكتملت فاكتب ردك النهائي بلا أدوات.)' });
+    }
+    if (stopF) addLog({ r: 't', i: 'hand', t: 'أوقفتُ المهمة' });
+  } finally { showTy(false); setBusy(false); if (autoPk) peek(false); saveChat(); where(); }
+}
+async function send(text) {
+  text = (text || TXT.value).trim(); if (!text || busy) return;
+  TXT.value = ''; grow(); setQ([]); addLog({ r: 'u', t: text }); hist.push({ role: 'user', content: text }); lastW = wordsTot(); await loop();
+}
+
+/* ---------- الواجهة ---------- */
+function grow() { TXT.style.height = 'auto'; TXT.style.height = Math.min(TXT.scrollHeight, 120) + 'px'; }
+function welcome() {
+  addLog({ r: 'a', t: 'أهلًا بك، أنا **رفيق بيان**. أعرف هذا المكان شبرًا شبرًا: آخذك في جولة وأُضيء لك الأدوات، وأقرأ فصولك وأقيّمها بصراحة، وأقترح عليك أفكارًا، وأكتب معك داخل المحرر إن أردت، وأهيّئ لك جوّ الكتابة بمطرٍ أو ليلٍ أو دفء مدفأة.\nمن أين نبدأ؟' });
+  setQ([{ l: 'خذني في جولة', q: 'خذني في جولة سريعة في الموقع وأضئ لي أهم الأدوات' }, { l: 'قيّم الفصل الحالي', q: 'اقرأ الفصل الحالي وقيّمه بصراحة مع نصائح' }, { l: 'أحتاج أفكارًا', q: 'أحتاج أفكارًا لتطوير روايتي، اقرأ ما كتبته أولًا' }, { l: 'هيّئ لي الجو', q: 'اختر لي جوّ كتابة يناسب روايتي' }]);
+}
+function toggle(f) {
+  isOpen = f === undefined ? !isOpen : f; P.classList.toggle('rf-open', isOpen); FAB.classList.toggle('open', isOpen);
+  if (!isOpen) return;
+  FAB.classList.remove('nudge'); $('rfNudge').style.display = 'none'; where();
+  if (!log.length) welcome(); else toEnd();
+  if (matchMedia('(hover:hover)').matches) setTimeout(() => TXT.focus({ preventScroll: true }), 300);
+}
+window.rfToggle = toggle;
+$('rfX').onclick = () => toggle(false);
+$('rfMin').onclick = () => peek(!P.classList.contains('peek'));
+$('rfClr').onclick = () => { if (busy) { stopF = true; } if (!confirm('بدء محادثة جديدة؟ (لن يُمسّ شيء من روايتك)')) return; log = []; hist = []; LOG.innerHTML = ''; setQ([]); saveChat(); welcome(); };
+$('rfSend').onclick = () => { if (busy) { stopF = true; } else send(); };
+TXT.addEventListener('input', grow);
+TXT.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && matchMedia('(hover:hover)').matches) { e.preventDefault(); send(); } });
+{ const st = (() => { try { return JSON.parse(localStorage.getItem('bayan_chat') || 'null'); } catch (e) { return null; } })(); if (st) { log = Array.isArray(st.log) ? st.log : []; hist = Array.isArray(st.hist) ? st.hist : []; log.forEach(i => LOG.append(node(i))); } }
+{ const _t = tab; tab = id => { _t(id); where(); }; }
+where(); moodUi();
+
+/* ---------- مبادرة هادئة: يلمّح ولا يقتحم ---------- */
+$('chBody').addEventListener('input', () => { lastType = Date.now(); });
+function nudge(n) {
+  const b = $('rfNudge'); b.textContent = 'كتبتَ نحو ' + n + ' كلمة منذ قليل. تحب رأيي الصريح؟'; b.style.display = 'block'; FAB.classList.add('nudge'); setTimeout(() => { b.style.display = 'none'; }, 12000);
+  b.onclick = () => { toggle(true); addLog({ r: 'a', t: 'لاحظتُ أنك كتبتَ نحو ' + n + ' كلمة منذ آخر مرة. أقرأ الفصل وأعطيك رأيي بصراحة؟' }); setQ([{ l: 'نعم، قيّم الفصل', q: 'اقرأ الفصل الحالي وقيّمه بصراحة مع نصائح' }, { l: 'لاحقًا' }]); };
+  b.onkeydown = e => { if (e.key === 'Enter') b.onclick(); };
+}
+lastW = wordsTot();
+setInterval(() => {
+  if (busy || isOpen || curTab() !== 'studio' || document.hidden) return;
+  const t = wordsTot(), idle = Date.now() - lastType; if (t < lastW) lastW = t;
+  if (idle > 45000 && idle < 600000 && t - lastW >= 220 && Date.now() - lastNudge > 900000) { nudge(t - lastW); lastNudge = Date.now(); lastW = t; }
+}, 20000);
 })();
 </script>
 </body>
