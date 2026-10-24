@@ -36,6 +36,7 @@
     <button data-t="studio" onclick="tab('studio')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-pen-nib"></i> استوديو التأليف</button>
     <button data-t="reader" onclick="tab('reader')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-book-open"></i> قراءة PDF</button>
     <button data-t="trans" onclick="tab('trans')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-language"></i> الترجمة</button>
+    <button data-t="pdft" onclick="tab('pdft')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-file-circle-check"></i> ترجمة PDF</button>
     <button data-t="split" onclick="tab('split')" class="px-4 py-2 rounded-xl text-xs whitespace-nowrap"><i class="fa-solid fa-scissors"></i> تقسيم PDF</button>
   </div>
 </nav>
@@ -118,6 +119,29 @@
   </div>
 </section>
 
+<!-- PDF TRANSLATE -->
+<section id="pdft" class="sec hidden space-y-4">
+  <div class="card space-y-3">
+    <h2 class="font-bold"><i class="fa-solid fa-file-pdf text-orange-500"></i> ترجمة ملف PDF كامل</h2>
+    <div class="flex flex-wrap gap-2 items-center">
+      <select id="pe" class="inp !w-auto"><option value="local">محلي بدون حد (يحمّل نموذجًا أول مرة)</option><option value="mm">سريع (MyMemory، محدود يوميًا)</option></select>
+      <select id="pdir" class="inp !w-auto"><option value="en|ar">English ← العربية</option><option value="ar|en">العربية ← English</option></select>
+      <input type="file" id="pf" accept="application/pdf" class="hidden" onchange="pdfPick(event)">
+      <button class="btn" onclick="$('pf').click()"><i class="fa-solid fa-folder-open"></i> اختيار ملف PDF</button>
+    </div>
+    <p id="pinfo" class="text-xs text-slate-400">لم يُختر ملف بعد</p>
+    <div class="w-full bg-slate-800 rounded-full h-2"><div id="pbar" class="bg-orange-600 h-2 rounded-full" style="width:0%"></div></div>
+    <p id="pstat" class="text-xs text-slate-300"></p>
+    <div class="flex flex-wrap gap-2">
+      <button id="pgo" class="btn-p" onclick="pdfTranslate()"><i class="fa-solid fa-wand-magic-sparkles"></i> بدء الترجمة</button>
+      <button class="btn" onclick="pdfStop=true">إيقاف</button>
+      <button class="btn" onclick="dlPdfTr('pdf')">تنزيل PDF</button>
+      <button class="btn" onclick="dlPdfTr('txt')">تنزيل TXT</button>
+    </div>
+    <div id="pprev" class="bg-slate-950 rounded-xl p-4 text-sm leading-relaxed h-52 overflow-y-auto whitespace-pre-wrap text-slate-300"></div>
+  </div>
+</section>
+
 <!-- SPLIT -->
 <section id="split" class="sec hidden grid md:grid-cols-2 gap-4">
   <div class="card space-y-3">
@@ -139,6 +163,8 @@
   <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 relative">
     <button onclick="closeAuth()" class="absolute top-4 left-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
     <h3 class="text-lg font-bold text-center"><i class="fa-solid fa-user-shield text-orange-500"></i> حسابك في بيان</h3>
+    <button class="w-full py-3 rounded-xl bg-white text-slate-900 text-sm font-bold flex items-center justify-center gap-2" onclick="googleLogin()"><i class="fa-brands fa-google"></i> الدخول بحساب Google</button>
+    <p class="text-center text-[11px] text-slate-500">أو بالإيميل والرمز السري</p>
     <input id="aEmail" type="email" class="inp !p-3" placeholder="الإيميل" autocomplete="email">
     <input id="aPass" type="password" class="inp !p-3" placeholder="الرمز السري (6 خانات على الأقل)" autocomplete="current-password">
     <div class="flex gap-3"><button class="btn-p flex-1" onclick="authDo('in')">دخول</button><button class="btn flex-1" onclick="authDo('up')">حساب جديد</button></div>
@@ -195,6 +221,10 @@ async function authDo(mode) {
   closeAuth();
   if (mode === 'up' && !r.data.session) toast('أرسلنا رابط تأكيد إلى إيميلك، افتحه ثم سجّل دخولك');
   $('aPass').value = '';
+}
+async function googleLogin() {
+  const { error } = await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin } });
+  if (error) toast(error.message, 'err');
 }
 async function resetPw() {
   const email = $('aEmail').value.trim();
@@ -374,6 +404,80 @@ async function fileTrans(e) {
   try { $('tin').value = f.name.toLowerCase().endsWith('.pdf') ? await pdfText(await f.arrayBuffer()) : await f.text(); translate(); }
   catch (x) { toast('تعذرت قراءة الملف', 'err'); }
   e.target.value = '';
+}
+
+/* ---------- ترجمة ملف PDF كامل ---------- */
+let pdfPages = [], pdfStop = false, pdfOut = [], pdfName = 'translated';
+const locals = {};
+async function localTr(pair) {
+  if (!locals[pair]) {
+    const m = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2');
+    const id = pair === 'en|ar' ? 'Xenova/opus-mt-en-ar' : 'Xenova/opus-mt-ar-en';
+    locals[pair] = await m.pipeline('translation', id, { progress_callback: p => { if (p.status === 'progress') $('pstat').textContent = 'تحميل النموذج (أول مرة فقط)... ' + Math.round(p.progress) + '%'; } });
+  }
+  return locals[pair];
+}
+function splitChunks(src, max) {
+  const pieces = src.match(/[^.!?؟\n]+[.!?؟]*\s*|\n+/g) || [src], parts = []; let b = '';
+  for (let p of pieces) {
+    if ((b + p).length > max) { if (b.trim()) parts.push(b); b = ''; while (p.length > max) { parts.push(p.slice(0, max)); p = p.slice(max); } }
+    b += p;
+  }
+  if (b.trim()) parts.push(b);
+  return parts;
+}
+async function trPart(p, pair, eng) {
+  if (!p.trim()) return p;
+  const tail = p.match(/\s*$/)[0];
+  if (eng === 'local') { const t = await localTr(pair); const r = await t(p.trim(), { max_new_tokens: 400 }); return r[0].translation_text + tail; }
+  const r = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(p.trim()) + '&langpair=' + pair);
+  const j = await r.json();
+  if (j.responseStatus != 200) throw new Error(j.responseDetails || 'خطأ في الخدمة');
+  return j.responseData.translatedText + tail;
+}
+async function pdfPick(e) {
+  const f = e.target.files[0]; if (!f) return;
+  pdfName = f.name.replace(/\.pdf$/i, '') + '-translated'; pdfPages = []; pdfOut = [];
+  $('pinfo').textContent = 'جارٍ قراءة الملف...';
+  try {
+    const doc = await pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
+    for (let i = 1; i <= doc.numPages; i++) {
+      const t = await (await doc.getPage(i)).getTextContent();
+      pdfPages.push(t.items.map(x => x.str).join(' ').replace(/\s+/g, ' ').trim());
+    }
+    const n = pdfPages.reduce((a, p) => a + p.length, 0);
+    $('pinfo').textContent = `${f.name}: ${doc.numPages} صفحة، ${n} حرف` + (n < 20 ? ' (لا يوجد نص، ربما الملف صور ممسوحة)' : '');
+  } catch (x) { $('pinfo').textContent = 'تعذرت قراءة الملف'; }
+  e.target.value = '';
+}
+async function pdfTranslate() {
+  if (!pdfPages.some(p => p)) return toast('اختر ملف PDF فيه نص أولًا', 'err');
+  const eng = $('pe').value, pair = $('pdir').value, total = pdfPages.length, n = pdfPages.reduce((a, p) => a + p.length, 0);
+  if (eng === 'mm' && n > 4500 && !confirm('الملف ' + n + ' حرف، والخدمة المجانية تسمح بحوالي 5000 حرف باليوم وقد تتوقف في النص. المتابعة؟')) return;
+  pdfStop = false; pdfOut = []; $('pgo').disabled = true; $('pprev').textContent = ''; $('pbar').style.width = '0%';
+  try {
+    for (let i = 0; i < total && !pdfStop; i++) {
+      const parts = splitChunks(pdfPages[i], eng === 'local' ? 350 : 400); let out = '';
+      for (let j = 0; j < parts.length && !pdfStop; j++) {
+        $('pstat').textContent = `صفحة ${i + 1} / ${total} (جزء ${j + 1} / ${parts.length})`;
+        out += await trPart(parts[j], pair, eng);
+      }
+      if (pdfStop) break;
+      if (pair === 'en|ar' && $('rep').checked) out = replaceTerms(out);
+      pdfOut.push(out);
+      $('pbar').style.width = ((i + 1) / total * 100) + '%';
+      const pv = $('pprev'); pv.textContent = pdfOut.map((t, k) => `--- صفحة ${k + 1} ---\n${t}`).join('\n\n'); pv.scrollTop = pv.scrollHeight;
+    }
+    $('pstat').textContent = pdfStop ? 'تم الإيقاف، يمكنك تنزيل ما اكتمل' : 'اكتملت الترجمة ✓';
+  } catch (x) { $('pstat').textContent = 'توقفت الترجمة: ' + x.message + ' (يمكنك تنزيل ما اكتمل)'; }
+  $('pgo').disabled = false;
+}
+function dlPdfTr(kind) {
+  if (!pdfOut.length) return toast('لا توجد ترجمة بعد', 'err');
+  if (kind === 'txt') return dl(new Blob([pdfOut.map((t, k) => `--- صفحة ${k + 1} ---\n${t}`).join('\n\n')], { type: 'text/plain;charset=utf-8' }), pdfName + '.txt');
+  const rtl = $('pdir').value.endsWith('ar');
+  toast('جارٍ تجهيز PDF...');
+  pdfFromHtml(`<div dir="${rtl ? 'rtl' : 'ltr'}" style="text-align:${rtl ? 'right' : 'left'}">` + pdfOut.map((t, k) => `<p style="font-size:10pt;color:#666;${k ? 'page-break-before:always;' : ''}">صفحة ${k + 1}</p><div style="white-space:pre-wrap">${esc(t)}</div>`).join('') + '</div>', pdfName);
 }
 
 /* ---------- تقسيم PDF ---------- */
