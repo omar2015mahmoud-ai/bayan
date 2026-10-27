@@ -686,6 +686,16 @@ main,.sec{min-width:0;max-width:100%}
   </div>
 </div>
 
+<!-- STATS MODAL (للمالك فقط) -->
+<div id="statModal" role="dialog" aria-modal="true" aria-label="إحصائيات الموقع" class="fixed inset-0 z-[97] bg-slate-950/80 backdrop-blur flex items-center justify-center p-4 hidden" onclick="if(event.target===this)statClose()">
+  <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 relative" style="max-height:calc(100dvh - 2rem);overflow-y:auto">
+    <button onclick="statClose()" aria-label="إغلاق" class="absolute top-4 left-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <h3 class="text-lg font-bold text-center"><i class="fa-solid fa-chart-line text-emerald-400"></i> إحصائيات الموقع</h3>
+    <div id="statGrid" class="grid grid-cols-2 gap-2"></div>
+    <p class="text-center text-[11px] text-slate-500">تتحدّث الأرقام تلقائيًا وتظهر لحساب المالك فقط.</p>
+  </div>
+</div>
+
 <!-- RECOVERY MODAL: يظهر بعد فتح رابط استعادة الرمز السري من الإيميل -->
 <div id="recModal" role="dialog" aria-modal="true" aria-label="رمز سري جديد" class="fixed inset-0 z-[96] bg-slate-950/85 backdrop-blur flex items-center justify-center p-4 hidden">
   <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4">
@@ -704,6 +714,7 @@ main,.sec{min-width:0;max-width:100%}
     <div class="flex items-center justify-between shrink-0"><h3 class="font-bold text-sm"><i class="fa-solid fa-shield-halved text-orange-500"></i> الخصوصية والشروط</h3><button class="btn !py-1" onclick="closePriv()" aria-label="إغلاق">✕</button></div>
     <div class="flex-1 min-h-0 overflow-y-auto text-xs leading-7 text-slate-300 space-y-3 pr-0.5">
       <p><b class="text-orange-400">ما الذي نحفظه؟</b><br>إن سجّلت دخولك نحفظ إيميلك وروايتك (الفصول والشخصيات والملاحظات ولوح الحبكة) في خدمة Supabase لتتزامن بين أجهزتك. وإن لم تسجّل فكل شيء يبقى على جهازك فقط داخل المتصفح.</p>
+      <p><b class="text-orange-400">إحصاءات الزيارات</b><br>نسجّل كل زيارة بمعرّف عشوائي مجهول (بدون اسم أو إيميل) لمعرفة عدد الزوار، ونعرف عدد المتصلين لحظيًا.</p>
       <p><b class="text-orange-400">ما الذي يخرج من جهازك؟</b><br>عند استخدامك أدوات معيّنة يُرسَل النص المعني فقط إلى خدمة خارجية: التدقيق الإملائي إلى LanguageTool، والترجمة الجاهزة إلى خدمة ترجمة سحابية، والكتابة والتصحيح والتحليل بالذكاء الاصطناعي إلى مزوّد الذكاء الاصطناعي (الخدمة المجانية أو مفتاحك إن أضفته). لا تستخدم هذه الأدوات إن كان النص لا يجوز مشاركته.</p>
       <p><b class="text-orange-400">ملفاتك وكتبك</b><br>ملفات PDF وEPUB التي تفتحها تُعالَج داخل متصفحك وتُحفظ على جهازك فقط، ولا تُرفع إلى حسابك.</p>
       <p><b class="text-orange-400">مفتاح الذكاء الاصطناعي</b><br>إن أضفت مفتاح API فهو يُحفظ في متصفحك فقط ويُستخدم لطلباتك أنت.</p>
@@ -780,7 +791,7 @@ function tab(id) {
 }
 
 /* ---------- الحساب (Supabase Auth) ---------- */
-let user = null, synced = false;
+let user = null, synced = false, isAdmin = false, adminFor = null, presCh = null, presReady = false;
 function openAuth() { $('authModal').classList.remove('hidden'); }
 function closeAuth() { $('authModal').classList.add('hidden'); }
 function renderAuth() {
@@ -788,7 +799,7 @@ function renderAuth() {
   if (user) {
     const s = document.createElement('span'); s.className = 'text-xs font-bold text-orange-400 ml-2'; s.textContent = (user.email || '').replace(/@bayan\.local$/, '');
     const o = document.createElement('button'); o.className = 'btn'; o.textContent = 'خروج'; o.onclick = logout;
-    b.append(s, o);
+    if (isAdmin) { const a = document.createElement('button'); a.className = 'btn'; a.innerHTML = '<i class="fa-solid fa-chart-line text-emerald-400"></i><span class="hidden sm:inline"> إحصائيات</span>'; a.onclick = statOpen; b.append(a, s, o); } else b.append(s, o);
   } else {
     const i = document.createElement('button'); i.className = 'btn-p'; i.innerHTML = '<i class="fa-solid fa-user-lock"></i> دخول / حساب جديد'; i.onclick = openAuth;
     b.append(i);
@@ -839,7 +850,57 @@ db.auth.onAuthStateChange((ev, session) => {
   if (!user) { synced = false; srvTs = null; }
   if (user && user.id !== was) { synced = false; srvTs = null; setTimeout(loadData, 0); }
   if (ev === 'PASSWORD_RECOVERY') setTimeout(recOpen, 50);
+  setTimeout(adminSync, 0);
 });
+
+/* ---------- إحصائيات الموقع (للمالك فقط) ---------- */
+const SID = (() => {
+  try { let s = localStorage.getItem('bayan_sid'); if (!s) { s = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); localStorage.setItem('bayan_sid', s); } return s; }
+  catch (e) { return 'x' + Math.random().toString(36).slice(2); }
+})();
+let onlineN = 0, onlineM = 0, statData = null, statT = 0;
+async function logVisit() {
+  try {
+    if (sessionStorage.getItem('bayan_v')) return;
+    sessionStorage.setItem('bayan_v', '1');
+    await db.from('visits').insert({ sid: SID });
+  } catch (e) {}
+}
+function presTrack() { if (presCh && presReady) { try { presCh.track({ member: !!user }); } catch (e) {} } }
+function presInit() {
+  try {
+    presCh = db.channel('bayan-online', { config: { presence: { key: SID } } });
+    presCh.on('presence', { event: 'sync' }, () => {
+      const s = presCh.presenceState(), ks = Object.keys(s);
+      onlineN = ks.length; onlineM = ks.filter(k => s[k].some(m => m.member)).length;
+      if (!$('statModal').classList.contains('hidden')) statPaint();
+    }).subscribe(st => { if (st === 'SUBSCRIBED') { presReady = true; presTrack(); } });
+  } catch (e) {}
+}
+async function adminSync() {
+  if (!user) { isAdmin = false; adminFor = null; renderAuth(); presTrack(); return; }
+  if (adminFor === user.id) return;
+  adminFor = user.id; presTrack();
+  try { const { data } = await db.from('admins').select('user_id').eq('user_id', user.id).maybeSingle(); isAdmin = !!data; } catch (e) { isAdmin = false; }
+  renderAuth();
+}
+async function statLoad() {
+  const { data, error } = await db.rpc('admin_stats');
+  if (error) { toast('تعذر جلب الإحصائيات', 'err'); return; }
+  statData = data; statPaint();
+}
+function statPaint() {
+  const d = statData || {}, n = v => v == null ? '—' : Number(v).toLocaleString('en-US');
+  const items = [['متصلون الآن', onlineN, 1], ['منهم مسجّلون', onlineM], ['زيارات اليوم', d.today], ['زوار اليوم', d.unique_today], ['زوار آخر 7 أيام', d.unique_7d], ['إجمالي الزيارات', d.total], ['إجمالي الزوار', d.unique_all], ['الحسابات', d.users], ['الروايات المحفوظة', d.novels]];
+  $('statGrid').innerHTML = items.map(([l, v, hot]) => '<div class="rounded-xl border ' + (hot ? 'border-emerald-500/50' : 'border-slate-800') + ' bg-slate-950/60 p-3 text-center"><div class="text-2xl font-extrabold ' + (hot ? 'text-emerald-400' : 'text-orange-400') + '">' + n(v) + '</div><div class="text-[11px] text-slate-400 mt-1">' + l + '</div></div>').join('');
+}
+function statOpen() {
+  if (!isAdmin) return;
+  $('statModal').classList.remove('hidden'); statPaint(); statLoad();
+  clearInterval(statT); statT = setInterval(statLoad, 20000);
+}
+function statClose() { $('statModal').classList.add('hidden'); clearInterval(statT); }
+presInit(); logVisit();
 
 /* ---------- حفظ البيانات ---------- */
 let chapters = [{ id: 1, title: 'الفصل الأول', content: '' }], active = 1, chars = [], plot = [], nid = 'n1', others = [];
