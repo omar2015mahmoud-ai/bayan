@@ -678,12 +678,10 @@ main,.sec{min-width:0;max-width:100%}
   <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 relative">
     <button onclick="closeAuth()" aria-label="إغلاق" class="absolute top-4 left-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
     <h3 class="text-lg font-bold text-center"><i class="fa-solid fa-user-shield text-orange-500"></i> حسابك في بيان</h3>
-    <button class="w-full py-3 rounded-xl bg-white text-slate-900 text-sm font-bold flex items-center justify-center gap-2" onclick="googleLogin()"><i class="fa-brands fa-google"></i> الدخول بحساب Google</button>
-    <p class="text-center text-[11px] text-slate-500">أو بالإيميل والرمز السري</p>
-    <input id="aEmail" type="email" class="inp !p-3" placeholder="الإيميل" autocomplete="email">
-    <input id="aPass" type="password" class="inp !p-3" placeholder="الرمز السري (6 خانات على الأقل)" autocomplete="current-password">
+    <input id="aEmail" type="text" dir="ltr" class="inp !p-3" placeholder="اسم المستخدم (إنجليزي وأرقام و _)" autocomplete="username" autocapitalize="none" spellcheck="false">
+    <input id="aPass" type="password" class="inp !p-3" placeholder="الرمز السري (6 خانات على الأقل)" autocomplete="current-password" onkeydown="if(event.key==='Enter')authDo('in')">
     <div class="flex gap-3"><button class="btn-p flex-1" onclick="authDo('in')">دخول</button><button class="btn flex-1" onclick="authDo('up')">حساب جديد</button></div>
-    <button class="text-xs text-slate-400 underline w-full" onclick="resetPw()">نسيت الرمز السري؟</button>
+    <p class="text-center text-[11px] text-amber-400/90 leading-5">لا يوجد استعادة للرمز السري، احفظه جيدًا ونزّل نسخة احتياطية من روايتك دوريًا.</p>
     <p class="text-center text-[11px] text-slate-500">بالدخول أو إنشاء حساب فأنت توافق على <button class="underline text-slate-400" onclick="openPriv()">الخصوصية والشروط</button></p>
   </div>
 </div>
@@ -788,7 +786,7 @@ function closeAuth() { $('authModal').classList.add('hidden'); }
 function renderAuth() {
   const b = $('authBox'); b.innerHTML = '';
   if (user) {
-    const s = document.createElement('span'); s.className = 'text-xs font-bold text-orange-400 ml-2'; s.textContent = user.email;
+    const s = document.createElement('span'); s.className = 'text-xs font-bold text-orange-400 ml-2'; s.textContent = (user.email || '').replace(/@bayan\.local$/, '');
     const o = document.createElement('button'); o.className = 'btn'; o.textContent = 'خروج'; o.onclick = logout;
     b.append(s, o);
   } else {
@@ -796,24 +794,19 @@ function renderAuth() {
     b.append(i);
   }
 }
+const uname2email = u => u.trim().toLowerCase() + '@bayan.local';
 async function authDo(mode) {
-  const email = $('aEmail').value.trim(), password = $('aPass').value;
-  if (!email || password.length < 6) return toast('أدخل إيميلًا صحيحًا ورمزًا من 6 خانات على الأقل', 'err');
-  const r = mode === 'in' ? await db.auth.signInWithPassword({ email, password }) : await db.auth.signUp({ email, password });
-  if (r.error) return toast(r.error.message, 'err');
-  closeAuth();
-  if (mode === 'up' && !r.data.session) toast('أرسلنا رابط تأكيد إلى إيميلك، افتحه ثم سجّل دخولك');
-  $('aPass').value = '';
-}
-async function googleLogin() {
-  const { error } = await db.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin } });
-  if (error) toast(error.message, 'err');
-}
-async function resetPw() {
-  const email = $('aEmail').value.trim();
-  if (!email) return toast('اكتب إيميلك أولًا', 'err');
-  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo: location.origin });
-  toast(error ? error.message : 'أرسلنا رابط استعادة الرمز إلى إيميلك', error ? 'err' : 'ok');
+  const u = $('aEmail').value.trim(), password = $('aPass').value;
+  if (!/^[a-zA-Z0-9_]{3,20}$/.test(u)) return toast('اسم المستخدم: 3 إلى 20 حرفًا إنجليزيًا أو أرقامًا أو _', 'err');
+  if (password.length < 6) return toast('الرمز السري 6 خانات على الأقل', 'err');
+  const email = uname2email(u), btns = $('authModal').querySelectorAll('button'); btns.forEach(b => b.disabled = true);
+  try {
+    const r = mode === 'in' ? await db.auth.signInWithPassword({ email, password }) : await db.auth.signUp({ email, password });
+    if (r.error) { const m = r.error.message; return toast(/Invalid login/i.test(m) ? 'اسم المستخدم أو الرمز غير صحيح' : /already registered/i.test(m) ? 'اسم المستخدم محجوز، اختر غيره' : /not confirmed/i.test(m) ? 'عطّل Confirm email من إعدادات Supabase' : m, 'err'); }
+    if (mode === 'up' && !r.data.session) return toast('عطّل Confirm email من إعدادات Supabase ثم أعد المحاولة', 'err');
+    closeAuth(); $('aPass').value = '';
+  } catch (e) { toast('تعذر الاتصال بالخادم', 'err'); }
+  finally { btns.forEach(b => b.disabled = false); }
 }
 /* ----- استعادة الرمز السري + الخصوصية ----- */
 function recOpen() { $('rPass').value = ''; $('rPass2').value = ''; $('rMsg').textContent = ''; $('recModal').classList.remove('hidden'); setTimeout(() => $('rPass').focus(), 80); }
