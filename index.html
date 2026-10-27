@@ -199,6 +199,18 @@ body{background:#0a0f1a!important}
 .qa .qs{margin-top:0}
 .sh .ic{background:#111a2c!important;border:1px solid rgba(245,158,11,.4);color:#fbbf24!important;box-shadow:none!important}
 .tb.bg-orange-600{background:#f59e0b!important;color:#111827!important;box-shadow:none!important}
+/* ===== إصلاح تخطيط الجوال: منع تمدد الشبكة بسبب النصوص الطويلة ===== */
+html,body{max-width:100%;overflow-x:clip}
+main,.sec{min-width:0;max-width:100%}
+#studio{min-width:0;max-width:100%;overflow-x:clip}
+#studio .grid>*,#studio aside,#studio aside>*{min-width:0}
+@media(max-width:1023px){#studio>.grid{grid-template-columns:minmax(0,1fr)!important}}
+#chList{overflow-x:hidden}
+#chList li{min-width:0;max-width:100%}
+#chList li>span{min-width:0;flex:1 1 0}
+#chList li>button{flex:none}
+#studio .seg{max-width:100%}
+#studio .tbp,#studio details.dt,#studio textarea,#studio input,#studio select{max-width:100%}
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -532,7 +544,7 @@ body{background:#0a0f1a!important}
   <div class="grid lg:grid-cols-2 gap-4 items-start">
     <div class="space-y-4">
       <div class="card space-y-3">
-        <div class="sh"><span class="ic"><i class="fa-solid fa-language"></i></span><div class="flex-1 min-w-0"><h2>ترجمة ملف</h2><p>ملفات PDF الممسوحة تعمل أيضًا عند اختيار الذكاء الاصطناعي، فهو يقرأ الصفحة كصورة.</p></div></div>
+        <div class="sh"><span class="ic"><i class="fa-solid fa-language"></i></span><div class="flex-1 min-w-0"><h2>ترجمة ملف</h2><p>ملفات PDF الممسوحة تعمل أيضًا عند اختيار الطريقة 4، فهي تقرأ الصفحة كصورة.</p></div></div>
         <div class="flex items-center gap-2"><span class="stp">1</span><b class="text-sm">اختر الملف</b></div>
         <input type="file" id="pf" accept="application/pdf,application/epub+zip,.pdf,.epub" class="hidden" onchange="trPick(event)">
         <button class="btn-p w-full !py-4 !text-sm" onclick="$('pf').click()"><i class="fa-solid fa-file-pdf"></i> اختر ملف PDF أو EPUB</button>
@@ -542,7 +554,7 @@ body{background:#0a0f1a!important}
         <div class="flex items-center gap-2"><span class="stp">2</span><b class="text-sm">اضبط الترجمة</b></div>
         <div class="grid grid-cols-2 gap-2">
           <div class="space-y-1"><label for="pdir" class="lbl">الاتجاه</label><select id="pdir" class="inp" onchange="trShow()"><option value="en|ar">English ← العربية</option><option value="ar|en">العربية ← English</option></select></div>
-          <div class="space-y-1"><label for="peng" class="lbl">الطريقة</label><select id="peng" class="inp"><option value="auto">تلقائي (Google ثم المحلي)</option><option value="gt">Google فقط</option><option value="local">محلي داخل جهازك</option><option value="ai">ذكاء اصطناعي (يقرأ الصفحة كصورة)</option></select></div>
+          <div class="space-y-1"><label for="peng" class="lbl">الطريقة</label><select id="peng" class="inp"><option value="auto">1</option><option value="gt">2</option><option value="local">3</option><option value="ai">4</option></select></div>
           <div class="space-y-1"><label for="pfrom" class="lbl">من صفحة</label><input id="pfrom" type="number" min="1" class="inp" placeholder="1"></div>
           <div class="space-y-1"><label for="pto" class="lbl">إلى صفحة</label><input id="pto" type="number" min="1" class="inp" placeholder="الأخيرة"></div>
         </div>
@@ -1403,7 +1415,7 @@ async function textPart0(p, pair, eng) {
   const tail = p.match(/\s*$/)[0], q = p.trim();
   if (eng !== 'local' && (eng === 'gt' || !gtDead)) {
     try { return (await gtPart(q, pair)) + tail; }
-    catch (e) { if (eng === 'gt') throw new Error('تعذر الاتصال بـ Google (' + errMsg(e) + ')، غيّر الطريقة إلى «محلي داخل جهازك»'); gtDead = true; toast('تعذر Google، تحوّلتُ للترجمة المحلية'); }
+    catch (e) { if (eng === 'gt') throw new Error('تعذرت الطريقة 2 (' + errMsg(e) + ')، جرّب الطريقة 3'); gtDead = true; toast('تعذرت الطريقة 2، تحوّلتُ للطريقة 3'); }
   }
   const t = await localTr(pair);
   return (await t((pair === 'en|ar' ? '>>ara<< ' : '') + q, { max_new_tokens: 400 }))[0].translation_text + tail;
@@ -1436,7 +1448,7 @@ async function trGo() {
       if (pair === 'en|ar' && $('rep').checked) t = replaceTerms(t);
       trOut[i] = t; trPdf = null; trView = i; $('pbar').style.width = ((k + 1) / todo.length * 100) + '%'; trShow(); trSaveSoon();
     }
-    $('pstat').textContent = trStop ? 'تم الإيقاف، اضغط «بدء» للمتابعة' : 'اكتملت الترجمة ✓ اضغط «تنزيل PDF المترجم»' + (trSkipped ? ` · ${trSkipped} صفحة بلا نص قابل للاستخراج (ممسوحة) تخطيتُها، استخدم طريقة الذكاء الاصطناعي لها` : '');
+    $('pstat').textContent = trStop ? 'تم الإيقاف، اضغط «بدء» للمتابعة' : 'اكتملت الترجمة ✓ اضغط «تنزيل PDF المترجم»' + (trSkipped ? ` · ${trSkipped} صفحة بلا نص قابل للاستخراج (ممسوحة) تخطيتُها، استخدم الطريقة 4 لها` : '');
   } catch (x) { $('pstat').textContent = 'توقفت: ' + errMsg(x) + ' (اضغط «بدء» للمتابعة)'; }
   trSave(); $('pgo').disabled = false;
 }
@@ -1660,11 +1672,37 @@ function layoutBg(g, c, x, y, w, h) {
   }
   return [Math.round(r / n), Math.round(gg / n), Math.round(b / n)];
 }
+/* ===== المنظومة 5: ترجمة كتل الصفحة بالذكاء الاصطناعي (خاصة بزر «بنفس تصميم الأصل») =====
+   ترسل كل كتل الصفحة مرقّمة في طلب واحد وتستخرج الترجمات بالأرقام، وما فشل منها يُعاد فرديًا. */
+async function layoutAiFill(blocks, tr, pair, fin) {
+  const dirTxt = pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية';
+  const god = pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '';
+  const sysN = 'أنت مترجم أدبي محترف. ستصلك كتل نصية مرقّمة بصيغة [رقم] ثم النص، مأخوذة من صفحة كتاب. ترجم كل كتلة ' + dirTxt + ' ترجمة دقيقة وسلسة، وبطول قريب من الأصل قدر الإمكان لأنها ستوضع في نفس المساحة. أعد كل كتلة بنفس رقمها بصيغة [رقم] ثم الترجمة، كل كتلة في فقرة مستقلة، دون دمج كتل ودون حذف ودون أي شرح أو مقدمة.' + god;
+  const sys1 = 'أنت مترجم أدبي محترف. ترجم النص التالي ' + dirTxt + ' ترجمة دقيقة وسلسة وبطول قريب من الأصل. أعد الترجمة فقط بلا رقم ولا شرح.' + god;
+  const mo = $('pmodel').value.trim() || undefined, wait = ms => new Promise(r => setTimeout(r, ms));
+  const todo = blocks.map((_, k) => k).filter(k => tr[k] == null), groups = []; let cur = [], len = 0;
+  for (const k of todo) { const l = blocks[k].text.length; if (cur.length && (len + l > 1800 || cur.length >= 25)) { groups.push(cur); cur = []; len = 0; } cur.push(k); len += l; }
+  if (cur.length) groups.push(cur);
+  for (const grp of groups) {
+    if (trStop) return; let raw = '';
+    for (let t = 0; t < 3 && !trStop; t++) {
+      try { raw = await aiChat([{ role: 'system', content: sysN }, { role: 'user', content: grp.map(k => '[' + (k + 1) + '] ' + blocks[k].text).join('\n\n') }], mo); break; }
+      catch (e) { if (t === 2) throw e; await wait(2000 * (t + 1)); }
+    }
+    const re = /\[(\d+)\]\s*([\s\S]*?)(?=\n\s*\[\d+\]|$)/g; let m;
+    while ((m = re.exec(raw))) { const k = +m[1] - 1, v = m[2].replace(/\s+/g, ' ').trim(); if (grp.includes(k) && v && tr[k] == null) tr[k] = fin(v); }
+  }
+  for (const k of todo) {
+    if (trStop) return; if (tr[k] != null) continue;
+    try { const r = (await aiChat([{ role: 'system', content: sys1 }, { role: 'user', content: blocks[k].text }], mo)).replace(/^\s*\[\d+\]\s*/, '').replace(/\s+/g, ' ').trim(); if (r) tr[k] = fin(r); } catch (e) {}
+  }
+}
 async function trBuildLayout() {
-  if (!trDoc) return toast('هذه الميزة لملفات PDF فقط (افتح PDF أولًا)', 'err');
-  const pair = $('pdir').value, rtl = pair.endsWith('ar'), srcRtl = pair.startsWith('ar'), eng = $('peng').value === 'ai' ? 'gt' : $('peng').value;
+  if (!trDoc) return toast(trEpub ? 'هذه الميزة لملفات PDF فقط' : 'اختر ملف PDF الأصلي أولًا (أو أعد اختياره)، فالترجمة المحفوظة لا تحمل تصميم الصفحات', 'err');
+  const pair = $('pdir').value, rtl = pair.endsWith('ar'), srcRtl = pair.startsWith('ar'), fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
   const a = Math.max(1, +$('pfrom').value || 1), b = Math.min(trN, +$('pto').value || trN), fam = rtl ? 'Amiri, serif' : 'Georgia, serif';
-  const out = await PDFLib.PDFDocument.create(); trStop = false; gtDead = false; $('pgo').disabled = true;
+  const out = await PDFLib.PDFDocument.create(); trStop = false; $('pgo').disabled = true;
+  let totBlocks = 0, doneBlocks = 0, lost = 0, lastErr = '', fbDead = false;
   try {
     try { await document.fonts.load('30px Amiri', 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي'); } catch (e) {}
     for (let i = a - 1; i < b && !trStop; i++) {
@@ -1673,11 +1711,18 @@ async function trBuildLayout() {
       const g = c.getContext('2d', { willReadFrequently: true }); await p.render({ canvasContext: g, viewport: vp }).promise;
       const tc = await p.getTextContent(), segs = [];
       for (const it of tc.items) { if (!it.str || !it.str.trim()) continue; const m = pdfjsLib.Util.transform(vp.transform, it.transform); segs.push({ s: it.str, x: m[4], y: m[5], h: Math.hypot(m[2], m[3]) || 10, w: it.width * 2 }); }
-      const blocks = layoutGroup(segs, srcRtl), key = trId + '|' + pair + '|' + i, tr = trBlk[key] || (trBlk[key] = []); let n = 0;
-      await Promise.all([0, 1, 2, 3].map(async () => { while (n < blocks.length && !trStop) { const k = n++; if (tr[k] != null) continue; let t = await textPart(blocks[k].text, pair, eng); if (pair === 'en|ar' && $('rep').checked) t = replaceTerms(t); tr[k] = t; } }));
-      if (trStop) break;
-      const bgs = blocks.map(B => layoutBg(g, c, B.x0 - 4, B.top - 3, B.x1 - B.x0 + 8, B.bot - B.top + 6));
+      const blocks = layoutGroup(segs, srcRtl), key = trId + '|5|' + pair + '|' + i, tr = trBlk[key] || (trBlk[key] = []); let n = 0; totBlocks += blocks.length;
+      if (blocks.some((_, k) => tr[k] == null)) {
+        try { await layoutAiFill(blocks, tr, pair, fin); } catch (e) { lastErr = errMsg(e); }
+        if (trStop) break;
+        if (!fbDead && blocks.some((_, k) => tr[k] == null)) {
+          await Promise.all([0, 1, 2, 3].map(async () => { while (n < blocks.length && !trStop && !fbDead) { const k = n++; if (tr[k] != null) continue; try { tr[k] = fin(await textPart(blocks[k].text, pair, 'gt')); } catch (e) { fbDead = true; lastErr = lastErr || errMsg(e); } } }));
+          if (trStop) break;
+        }
+      }
+      const bgs = blocks.map((B, k) => tr[k] == null ? null : layoutBg(g, c, B.x0 - 4, B.top - 3, B.x1 - B.x0 + 8, B.bot - B.top + 6));
       blocks.forEach((B, k) => {
+        if (tr[k] == null) { lost++; return; } doneBlocks++;
         const bx = Math.max(0, B.x0 - 4), by = Math.max(0, B.top - 3), bw = Math.min(c.width - bx, B.x1 - B.x0 + 8), bh = B.bot - B.top + 6, bg = bgs[k];
         g.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`; g.fillRect(bx, by, bw, bh);
         g.fillStyle = (bg[0] * .3 + bg[1] * .59 + bg[2] * .11) < 110 ? '#fff' : '#000'; g.textBaseline = 'top'; g.direction = rtl ? 'rtl' : 'ltr'; g.textAlign = rtl ? 'right' : 'left';
@@ -1689,7 +1734,10 @@ async function trBuildLayout() {
       out.addPage([v1.width, v1.height]).drawImage(await out.embedJpg(await bl.arrayBuffer()), { x: 0, y: 0, width: v1.width, height: v1.height }); c.width = c.height = 0;
     }
     if (trStop) { $('pstat').textContent = 'تم الإيقاف، الترجمة المنجزة محفوظة، اضغط الزر مرة ثانية للمتابعة'; return; }
-    $('pbar').style.width = '100%'; $('pstat').textContent = 'اكتمل ✓'; dl(new Blob([await out.save()], { type: 'application/pdf' }), trName + '-translated-layout.pdf'); toast('تم حفظ الملف بنفس تصميم الأصل');
+    if (!totBlocks) { $('pstat').textContent = 'لا يوجد نص قابل للاستخراج في هذه الصفحات (ملف ممسوح كصور). هذه الميزة تحتاج PDF نصيًا.'; return toast('الملف بلا نص قابل للاستخراج', 'err'); }
+    if (!doneBlocks) { $('pstat').textContent = 'تعذرت الترجمة: ' + (lastErr || 'لم يرجع الذكاء الاصطناعي ترجمة') + '. لم يُنزَّل ملف. أضف مفتاحك من زر الذكاء الاصطناعي أعلى الصفحة أو أعد المحاولة.'; return toast('تعذرت الترجمة', 'err'); }
+    $('pbar').style.width = '100%'; $('pstat').textContent = 'اكتمل ✓' + (lost ? ` · ${lost} نص بقي بلغته الأصلية لتعذّر ترجمته${lastErr ? ' (' + lastErr + ')' : ''}، أعد الضغط لإكمالها` : '');
+    dl(new Blob([await out.save()], { type: 'application/pdf' }), trName + '-translated-layout.pdf'); toast(lost ? 'تم الحفظ، وبقيت بعض النصوص بلا ترجمة' : 'تم حفظ الملف بنفس تصميم الأصل', lost ? 'err' : undefined);
   } catch (e) { $('pstat').textContent = 'توقفت: ' + errMsg(e); toast('تعذر البناء: ' + errMsg(e), 'err'); }
   finally { $('pgo').disabled = false; }
 }
@@ -2566,7 +2614,7 @@ const FEAT = {
   ai_fix: ['reader', '#reader [onclick^="aiFixPage("]', 'تصحيح بالذكاء الاصطناعي', 'يصلح أخطاء استخراج النص من PDF'],
   bookmark: ['reader', '#reader [onclick^="bmToggle("]', 'العلامات', 'وضع علامة على الصفحة والعودة إليها'],
   tr_pick: ['trans', '#trans .btn-p', 'اختيار ملف للترجمة', 'يقبل PDF وEPUB'],
-  tr_engine: ['trans', '#peng', 'محرك الترجمة', 'Google أو محلي أو الذكاء الاصطناعي الذي يقرأ الصفحة كصورة'],
+  tr_engine: ['trans', '#peng', 'طريقة الترجمة', 'أربع طرق مرقّمة 1 إلى 4: (1) تلقائي، (2) سحابي فقط، (3) محلي داخل الجهاز، (4) ذكاء اصطناعي يقرأ الصفحة كصورة. وزر «بنفس تصميم الأصل» له منظومة خاصة بنفسه'],
   tr_dir: ['trans', '#pdir', 'اتجاه الترجمة', 'إنجليزي إلى عربي أو العكس'],
   tr_range: ['trans', '#pfrom', 'نطاق الصفحات', 'ترجم جزءًا من الكتاب فقط'],
   tr_go: ['trans', '#pgo', 'بدء الترجمة', 'يبدأ أو يتابع من حيث توقف'],
