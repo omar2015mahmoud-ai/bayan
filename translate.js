@@ -1,29 +1,32 @@
-// Cloudflare Pages Function: /api/translate  (ترجمة احتياطية عبر Gemini)
-// الإعداد: Pages → Settings → Variables and Secrets → أضف سرًا باسم GEMINI_API_KEY
+// Cloudflare Pages Function: /api/translate  (ترجمة احتياطية)
+// الأسهل: Settings → Bindings → Add → Workers AI، والاسم AI (بدون مفتاح).
+// بديل: سر باسم GEMINI_API_KEY.
 export async function onRequestPost({ request, env }) {
   const origin = request.headers.get('Origin') || '';
-  const host = new URL(request.url).origin;
-  if (origin && origin !== host) return new Response('forbidden', { status: 403 });
-  if (!env.GEMINI_API_KEY) return new Response('not configured', { status: 503 });
+  if (origin && origin !== new URL(request.url).origin) return new Response('forbidden', { status: 403 });
   let b; try { b = await request.json(); } catch { return new Response('bad json', { status: 400 }); }
   const text = String(b.text || '').slice(0, 6000);
-  const names = { en: 'English', ar: 'Arabic' };
-  const sl = names[b.sl], tl = names[b.tl];
-  if (!text.trim() || !sl || !tl) return new Response('bad request', { status: 400 });
-  const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + env.GEMINI_API_KEY },
-    body: JSON.stringify({
-      model: 'gemini-2.5-flash',
-      messages: [
-        { role: 'system', content: `Translate from ${sl} to ${tl}. Output only the translation, keep paragraph breaks, add nothing.` },
-        { role: 'user', content: text }
-      ]
-    })
-  });
-  if (!r.ok) return new Response('upstream ' + r.status, { status: 502 });
-  const j = await r.json();
-  const out = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
-  if (!out) return new Response('empty', { status: 502 });
-  return new Response(JSON.stringify({ text: out.trim() }), { headers: { 'Content-Type': 'application/json' } });
+  const ok = { en: 'English', ar: 'Arabic' };
+  if (!text.trim() || !ok[b.sl] || !ok[b.tl]) return new Response('bad request', { status: 400 });
+  const json = o => new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } });
+
+  if (env.AI) {
+    try {
+      const r = await env.AI.run('@cf/meta/m2m100-1.2b', { text, source_lang: b.sl, target_lang: b.tl });
+      const t = r && r.translated_text;
+      if (t) return json({ text: String(t).trim() });
+    } catch (e) {}
+  }
+  if (env.GEMINI_API_KEY) {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + env.GEMINI_API_KEY },
+      body: JSON.stringify({ model: 'gemini-2.5-flash', messages: [
+        { role: 'system', content: `Translate from ${ok[b.sl]} to ${ok[b.tl]}. Output only the translation, keep paragraph breaks.` },
+        { role: 'user', content: text }] })
+    });
+    if (r.ok) { const j = await r.json(); const t = j.choices?.[0]?.message?.content; if (t) return json({ text: t.trim() }); }
+    return new Response('upstream', { status: 502 });
+  }
+  return new Response('not configured', { status: 503 });
 }
