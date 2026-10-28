@@ -604,7 +604,7 @@ main,.sec{min-width:0;max-width:100%}
         <p id="pstat" class="text-xs text-slate-300 min-h-[1rem]"></p>
         <div class="flex gap-2"><button id="pgo" class="btn-p flex-1" onclick="trGo()"><i class="fa-solid fa-wand-magic-sparkles"></i> بدء / متابعة</button><button class="btn" onclick="trStop=true">إيقاف</button></div>
         <button class="btn w-full" onclick="trDl()"><i class="fa-solid fa-download"></i> تنزيل PDF المترجم</button>
-        <button class="btn-p w-full" onclick="trBuildLayout()"><i class="fa-solid fa-file-pdf"></i> تنزيل PDF بنفس تصميم الأصل (صور وتنسيق)</button>
+        <button class="btn-p w-full" onclick="trBuildLayout()"><i class="fa-solid fa-file-pdf"></i> تنزيل بنفس تصميم الأصل (صور وتنسيق) — PDF أو EPUB</button>
       </div>
     </div>
     <div class="space-y-4">
@@ -1134,7 +1134,7 @@ async function trListRender() {
   b.innerHTML = '<b class="text-xs text-slate-300"><i class="fa-solid fa-clock-rotate-left text-orange-500"></i> ترجماتي المحفوظة</b>' + savedT.map((x, i) => `<div class="flex flex-wrap items-center gap-2 text-xs border-t border-slate-800 pt-2"><span class="truncate flex-1">${esc(x.name)}</span><span class="text-slate-500">${x.out.filter(v => v != null).length}/${x.n}</span><button class="btn !py-1" onclick="trOpenSaved(${i})">فتح</button><button class="btn !py-1" onclick="trDlSaved(${i})">PDF</button><button class="btn !py-1" onclick="trToReader(${i})">قراءة</button><button class="btn !py-1 text-rose-400" onclick="trDel(${i})"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
 }
 function trOpenSaved(i) {
-  const x = savedT[i]; trDoc = null; trEpub = null; trId = x.id; trName = x.name; trN = x.n; trOut = x.out.slice(); trPdf = x.pdf || null; trView = 0;
+  const x = savedT[i]; trDoc = null; trEpub = null; trBlob = null; trId = x.id; trName = x.name; trN = x.n; trOut = x.out.slice(); trPdf = x.pdf || null; trView = 0;
   $('pdir').value = x.pair || 'en|ar'; $('pfrom').value = 1; $('pto').value = trN;
   const d = trOut.filter(v => v != null).length; $('pbar').style.width = (d / trN * 100) + '%';
   $('pinfo').textContent = `${x.name}: ${trN} صفحة، المترجم ${d}` + (d < trN ? ' (لإكمال الترجمة أعد اختيار الملف الأصلي)' : ''); trShow(); tab('trans');
@@ -1595,8 +1595,8 @@ async function epubPages(blob, raw) {
   return pages;
 }
 async function trLoad(blob, name) {
-  if (isEpub(blob, name)) { trEpub = await epubPages(blob); trDoc = null; trN = trEpub.length; trName = name.replace(/\.epub$/i, ''); }
-  else { trDoc = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise; trEpub = null; trN = trDoc.numPages; trName = name.replace(/\.pdf$/i, ''); }
+  if (isEpub(blob, name)) { trEpub = await epubPages(blob); trBlob = blob; trDoc = null; trN = trEpub.length; trName = name.replace(/\.epub$/i, ''); }
+  else { trDoc = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise; trEpub = null; trBlob = null; trN = trDoc.numPages; trName = name.replace(/\.pdf$/i, ''); }
   trId = 'x:' + name + '_' + blob.size; trView = 0; trStop = false;
   const old = await dbGet(trId); trOut = old && old.out ? old.out.slice() : []; trPdf = old && old.pdf || null;
   if (old && old.pair) $('pdir').value = old.pair;
@@ -1965,8 +1965,59 @@ async function layoutAiFill(blocks, tr, pair, fin) {
     try { const r = (await aiChat([{ role: 'system', content: sys1 }, { role: 'user', content: blocks[k].text }], mo)).replace(/^\s*\[\d+\]\s*/, '').replace(/\s+/g, ' ').trim(); if (r) tr[k] = fin(r); } catch (e) {}
   }
 }
+let trBlob = null;
+/* EPUB بنفس تصميم الأصل: يبقى الكتاب كما هو (صور وأنماط وفهرس) ويُستبدل نص كل فقرة بترجمتها، ويُترجم الكتاب كله بغض النظر عن نطاق الصفحات */
+async function trBuildEpubLayout() {
+  const pair = $('pdir').value, rtl = pair.endsWith('ar'), fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
+  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,figcaption,td,th,dt,dd,blockquote,div', XNS = 'http://www.w3.org/XML/1998/namespace';
+  let tot = 0, done = 0, lost = 0, lastErr = '', fbDead = false; trStop = false; $('pgo').disabled = true;
+  try {
+    if (typeof JSZip === 'undefined') throw new Error('تعذر تحميل أداة EPUB، تحقق من الاتصال');
+    const zip = await JSZip.loadAsync(await trBlob.arrayBuffer());
+    const rd = async n => { const f = zip.file(n); if (!f) throw new Error('ملف ناقص داخل EPUB: ' + n); return f.async('string'); };
+    const px = (s, ty) => new DOMParser().parseFromString(s, ty || 'application/xml');
+    const rootPath = px(await rd('META-INF/container.xml')).querySelector('rootfile').getAttribute('full-path');
+    const opf = px(await rd(rootPath)), base = rootPath.includes('/') ? rootPath.slice(0, rootPath.lastIndexOf('/') + 1) : '', man = {};
+    opf.querySelectorAll('manifest > item').forEach(it => man[it.getAttribute('id')] = it.getAttribute('href'));
+    const docs = [...opf.querySelectorAll('spine > itemref')].map(r => man[r.getAttribute('idref')]).filter(Boolean).map(h => decodeURIComponent(new URL(h.split('#')[0], 'http://x/' + base).pathname.slice(1)));
+    for (let d = 0; d < docs.length && !trStop; d++) {
+      $('pstat').textContent = `نسخة EPUB بنفس التصميم: ملف ${d + 1} من ${docs.length}`; $('pbar').style.width = (d / docs.length * 100) + '%';
+      const f = zip.file(docs[d]); if (!f) continue;
+      const doc = px(await f.async('string'), 'application/xhtml+xml');
+      if (doc.querySelector('parsererror')) { lost++; continue; }
+      const els = [...doc.querySelectorAll(SEL)].filter(e => !e.querySelector(SEL) && /[A-Za-z\u0600-\u06FF]/.test(e.textContent));
+      const blocks = els.map(e => ({ text: e.textContent.replace(/\s+/g, ' ').trim() })), key = trId + '|5e|' + pair + '|' + d, tr = trBlk[key] || (trBlk[key] = []); let n = 0; tot += blocks.length;
+      if (blocks.some((_, k) => tr[k] == null)) {
+        try { await layoutAiFill(blocks, tr, pair, fin); } catch (e) { lastErr = errMsg(e); }
+        if (trStop) break;
+        if (!fbDead && blocks.some((_, k) => tr[k] == null)) {
+          await Promise.all([0, 1, 2, 3].map(async () => { while (n < blocks.length && !trStop && !fbDead) { const k = n++; if (tr[k] != null) continue; try { tr[k] = fin(await textPart(blocks[k].text, pair, 'gt')); } catch (e) { fbDead = true; lastErr = lastErr || errMsg(e); } } }));
+          if (trStop) break;
+        }
+      }
+      els.forEach((e, k) => {
+        if (tr[k] == null) { lost++; return; } done++;
+        const keep = [...e.querySelectorAll('img,svg')]; e.textContent = tr[k]; keep.forEach(x => e.appendChild(x));
+        e.setAttribute('dir', rtl ? 'rtl' : 'ltr'); e.style.textAlign = 'start';
+      });
+      const h = doc.documentElement; h.setAttribute('lang', rtl ? 'ar' : 'en'); h.setAttributeNS(XNS, 'xml:lang', rtl ? 'ar' : 'en');
+      zip.file(docs[d], new XMLSerializer().serializeToString(doc));
+    }
+    if (trStop) { $('pstat').textContent = 'تم الإيقاف، الترجمة المنجزة محفوظة، اضغط الزر مرة ثانية للمتابعة'; return; }
+    if (!tot) { $('pstat').textContent = 'لم أجد نصًا قابلًا للترجمة داخل الكتاب (قد يكون محميًا DRM).'; return toast('الملف بلا نص قابل للترجمة', 'err'); }
+    if (!done) { $('pstat').textContent = 'تعذرت الترجمة: ' + (lastErr || 'لم يرجع الذكاء الاصطناعي ترجمة') + '. لم يُنزَّل ملف. أضف مفتاحك من زر الذكاء الاصطناعي أعلى الصفحة أو أعد المحاولة.'; return toast('تعذرت الترجمة', 'err'); }
+    opf.querySelectorAll('language').forEach(l => l.textContent = rtl ? 'ar' : 'en');
+    const sp = opf.querySelector('spine'); if (sp) sp.setAttribute('page-progression-direction', rtl ? 'rtl' : 'ltr');
+    zip.file(rootPath, new XMLSerializer().serializeToString(opf)); zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
+    $('pbar').style.width = '100%'; $('pstat').textContent = 'اكتمل ✓' + (lost ? ` · ${lost} نص بقي بلغته الأصلية لتعذّر ترجمته${lastErr ? ' (' + lastErr + ')' : ''}، أعد الضغط لإكمالها` : '');
+    dl(await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip', compression: 'DEFLATE' }), trName + '-translated-layout.epub');
+    toast(lost ? 'تم الحفظ، وبقيت بعض النصوص بلا ترجمة' : 'تم حفظ EPUB بنفس تصميم الأصل', lost ? 'err' : undefined);
+  } catch (e) { $('pstat').textContent = 'توقفت: ' + errMsg(e); toast('تعذر البناء: ' + errMsg(e), 'err'); }
+  finally { $('pgo').disabled = false; }
+}
 async function trBuildLayout() {
-  if (!trDoc) return toast(trEpub ? 'هذه الميزة لملفات PDF فقط' : 'اختر ملف PDF الأصلي أولًا (أو أعد اختياره)، فالترجمة المحفوظة لا تحمل تصميم الصفحات', 'err');
+  if (trBlob && trEpub) return trBuildEpubLayout();
+  if (!trDoc) return toast(trEpub ? 'أعد اختيار ملف EPUB الأصلي أولًا، فالترجمة المحفوظة لا تحمل تصميم الكتاب' : 'اختر ملف PDF الأصلي أولًا (أو أعد اختياره)، فالترجمة المحفوظة لا تحمل تصميم الصفحات', 'err');
   const pair = $('pdir').value, rtl = pair.endsWith('ar'), srcRtl = pair.startsWith('ar'), fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
   const a = Math.max(1, +$('pfrom').value || 1), b = Math.min(trN, +$('pto').value || trN), fam = rtl ? 'Amiri, serif' : 'Georgia, serif';
   const out = await PDFLib.PDFDocument.create(); trStop = false; $('pgo').disabled = true;
