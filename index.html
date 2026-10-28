@@ -56,6 +56,10 @@ button:focus-visible,input:focus-visible{outline:2px solid #fb923c;outline-offse
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:22px 22px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 75%);mask-image:linear-gradient(180deg,#000,transparent 75%)}
 body>header{background:linear-gradient(180deg,rgba(7,10,20,.94),rgba(11,15,25,.82))!important;backdrop-filter:blur(14px);border-bottom:0!important}
 body>header::after{content:"";position:absolute;inset:auto 0 0 0;height:1px;background:linear-gradient(90deg,transparent,rgba(251,146,60,.6),rgba(236,72,153,.5),rgba(167,139,250,.6),transparent)}
+.rdtabs{display:flex;gap:.25rem;padding:.2rem;border-radius:.8rem;background:rgba(2,6,23,.55);border:1px solid rgba(51,65,85,.55)}
+.rdt{flex:1;padding:.45rem .4rem;border-radius:.6rem;font-size:12px;font-weight:700;color:#94a3b8;white-space:nowrap}
+.rdt.on{background:#ea580c;color:#fff}
+.tsep{display:inline-block;width:1px;height:18px;background:rgba(148,163,184,.3);margin:0 .35rem;flex:none;align-self:center}
 .logo{width:44px;height:44px;flex:none;filter:drop-shadow(0 6px 14px rgba(251,146,60,.4))}
 .logo-lg{width:84px;height:84px;flex:none;filter:drop-shadow(0 10px 24px rgba(251,146,60,.45))}
 .tbar{display:inline-flex;gap:.25rem;padding:.3rem;max-width:100%;overflow-x:auto;border-radius:999px;background:rgba(15,23,42,.72);border:1px solid rgba(71,85,105,.55);box-shadow:0 8px 24px rgba(0,0,0,.28);scrollbar-width:none}
@@ -259,16 +263,19 @@ main,.sec{min-width:0;max-width:100%}
   </div>
 </header>
 
+<div id="annBar" role="status" class="hidden text-center text-xs font-bold py-2 px-3 text-white" style="background:linear-gradient(90deg,#fb923c,#ec4899)"></div>
 <nav class="hidden md:block sticky top-16 z-40 py-2.5 backdrop-blur-md" style="background:linear-gradient(180deg,rgba(11,15,25,.88),rgba(11,15,25,.35))" aria-label="التبويبات">
   <div class="max-w-7xl mx-auto px-4"><div class="tbar">
     <button data-t="home" onclick="tab('home')" class="tb"><i class="fa-solid fa-house"></i> الرئيسية</button>
-    <button data-t="plot" onclick="tab('plot')" class="tb" style="display:none"><i class="fa-solid fa-diagram-project"></i> لوح الحبكة</button>
- <button data-t="edit" onclick="tab('edit')" class="tb"><i class="fa-solid fa-spell-check"></i> تحرير وتدقيق</button>
- <button data-t="mem" onclick="tab('mem');memRender()" class="tb"><i class="fa-solid fa-brain"></i> ذاكرة الرواية</button>
     <button data-t="studio" onclick="tab('studio')" class="tb"><i class="fa-solid fa-pen-nib"></i> استوديو التأليف</button>
+    <button data-t="plot" onclick="tab('plot')" class="tb" style="display:none"><i class="fa-solid fa-diagram-project"></i> لوح الحبكة</button>
+    <button data-t="mem" onclick="tab('mem');memRender()" class="tb"><i class="fa-solid fa-brain"></i> ذاكرة الرواية</button>
+    <button data-t="edit" onclick="tab('edit')" class="tb"><i class="fa-solid fa-spell-check"></i> تحرير وتدقيق</button>
+    <span class="tsep" aria-hidden="true"></span>
     <button data-t="reader" onclick="tab('reader')" class="tb"><i class="fa-solid fa-book-open"></i> القارئ</button>
     <button data-t="trans" onclick="tab('trans')" class="tb"><i class="fa-solid fa-language"></i> الترجمة</button>
     <button data-t="split" onclick="tab('split')" class="tb"><i class="fa-solid fa-scissors"></i> أدوات PDF</button>
+    <span class="tsep" aria-hidden="true"></span>
     <a href="https://x.com/oqx90" target="_blank" rel="noopener noreferrer" class="tb !text-orange-300"><i class="fa-solid fa-link"></i> حسابي</a>
   </div></div>
 </nav>
@@ -508,29 +515,9 @@ main,.sec{min-width:0;max-width:100%}
         <b id="pn" class="text-xs text-orange-400 px-1 whitespace-nowrap">من 0</b>
         <button class="btn" onclick="chPg(1)" aria-label="الصفحة التالية"><i class="fa-solid fa-chevron-left"></i></button>
       </div>
-      <div class="flex items-center gap-1"><button class="btn" onclick="zoom(-.2)" aria-label="تصغير">−</button><button class="btn" onclick="zoom(0)"><span id="zp">100%</span> ملاءمة</button><button class="btn" onclick="zoom(.2)" aria-label="تكبير">+</button></div>
+      <div class="flex items-center gap-1"><button class="btn" onclick="zoom(-.2)" aria-label="تصغير">−</button><button class="btn" onclick="zoom(0)"><span id="zp">100%</span> ملاءمة</button><button class="btn" onclick="zoom(.2)" aria-label="تكبير">+</button><button class="btn" onclick="document.fullscreenElement?document.exitFullscreen():$('cvBox').requestFullscreen()" aria-label="ملء الشاشة"><i class="fa-solid fa-expand"></i></button></div>
     </div>
     <input id="pgRange" type="range" min="1" max="1" value="1" class="w-full accent-orange-600" oninput="goPg(this.value)" aria-label="التنقل بين الصفحات">
-
-    <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-      <div class="rw"><span class="lbl">العرض</span>
-        <button id="vmBtn" class="btn" onclick="setVm(!vm)"></button>
-        <button id="txBtn" class="btn" onclick="txToggle()"><i class="fa-solid fa-align-right"></i> عرض نص الكتاب كاملًا وتصحيحه</button>
-        <button class="btn" onclick="$('cv').classList.toggle('nt');$('vcont').classList.toggle('nt')"><i class="fa-solid fa-moon"></i> ليلي</button>
-        <button class="btn" onclick="tf(2)" aria-label="تكبير خط النص">A+</button><button class="btn" onclick="tf(-2)" aria-label="تصغير خط النص">A−</button>
-        <button class="btn" onclick="swRtl=!swRtl;lsSet('bayan_sw',swRtl?'1':'0');toast(swRtl?'السحب لليمين = الصفحة التالية':'السحب لليسار = الصفحة التالية')"><i class="fa-solid fa-hand-pointer"></i> اتجاه السحب</button>
-        <button class="btn" onclick="document.fullscreenElement?document.exitFullscreen():$('cvBox').requestFullscreen()" aria-label="ملء الشاشة"><i class="fa-solid fa-expand"></i></button>
-      </div>
-      <div class="rw"><span class="lbl">الصفحة</span>
-        <button class="btn" onclick="bmToggle()"><i class="fa-solid fa-bookmark"></i> علامة</button>
-        <button class="btn" onclick="txScan()"><i class="fa-solid fa-spell-check"></i> فحص</button>
-        <button class="btn" onclick="txAuto()"><i class="fa-solid fa-wand-magic-sparkles"></i> إصلاح تلقائي</button>
-        <button class="btn" onclick="navigator.clipboard.writeText($('ptxt').value).then(()=>toast('تم نسخ نص الصفحة'))"><i class="fa-solid fa-copy"></i> نسخ</button>
-        <button class="btn" onclick="rdFromPage()"><i class="fa-solid fa-book-open-reader"></i> وضع القراءة</button>
-        <button class="btn" onclick="trFromReader()"><i class="fa-solid fa-language"></i> ترجمة الملف</button>
-      </div>
-    </div>
-    <div id="bmList" class="flex flex-wrap gap-2"></div>
 
     <div class="tbp space-y-2">
       <div class="rw">
@@ -553,6 +540,16 @@ main,.sec{min-width:0;max-width:100%}
       </details>
     </div>
 
+    <div class="rdtabs" role="tablist" aria-label="أدوات القارئ">
+      <button class="rdt on" role="tab" onclick="rdTab(0)"><i class="fa-solid fa-eye"></i> العرض</button>
+      <button class="rdt" role="tab" onclick="rdTab(1)"><i class="fa-solid fa-file-lines"></i> الصفحة</button>
+      <button class="rdt" role="tab" onclick="rdTab(2)"><i class="fa-solid fa-spell-check"></i> التصحيح والترجمة</button>
+    </div>
+    <div class="rdp"><div class="rw"><button id="vmBtn" class="btn" onclick="setVm(!vm)"></button><button id="txBtn" class="btn" onclick="txToggle()"><i class="fa-solid fa-align-right"></i> عرض نص الكتاب كاملًا وتصحيحه</button><button class="btn" onclick="$('cv').classList.toggle('nt');$('vcont').classList.toggle('nt')"><i class="fa-solid fa-moon"></i> ليلي</button><button class="btn" onclick="tf(2)" aria-label="تكبير خط النص">A+</button><button class="btn" onclick="tf(-2)" aria-label="تصغير خط النص">A−</button><button class="btn" onclick="swRtl=!swRtl;lsSet('bayan_sw',swRtl?'1':'0');toast(swRtl?'السحب لليمين = الصفحة التالية':'السحب لليسار = الصفحة التالية')"><i class="fa-solid fa-hand-pointer"></i> اتجاه السحب</button></div></div>
+    <div class="rdp hidden"><div class="rw"><button class="btn" onclick="bmToggle()"><i class="fa-solid fa-bookmark"></i> علامة</button><button class="btn" onclick="navigator.clipboard.writeText($('ptxt').value).then(()=>toast('تم نسخ نص الصفحة'))"><i class="fa-solid fa-copy"></i> نسخ</button><button class="btn" onclick="rdFromPage()"><i class="fa-solid fa-book-open-reader"></i> وضع القراءة</button></div></div>
+    <div class="rdp hidden"><div class="rw"><button class="btn" onclick="txScan()"><i class="fa-solid fa-spell-check"></i> فحص</button><button class="btn" onclick="txAuto()"><i class="fa-solid fa-wand-magic-sparkles"></i> إصلاح تلقائي</button><button class="btn" onclick="trFromReader()"><i class="fa-solid fa-language"></i> ترجمة الملف</button></div></div>
+    <div id="bmList" class="flex flex-wrap gap-2"></div>
+
     <div id="cvBox" class="relative overflow-auto bg-slate-950 rounded-xl p-2 text-center max-h-[88vh]">
       <div id="pgWrap"><canvas id="cv" class="hidden rounded shadow-lg"></canvas><div id="txl"></div><div id="hl"></div></div>
       <div id="vcont" style="display:none"></div>
@@ -560,7 +557,7 @@ main,.sec{min-width:0;max-width:100%}
       <p id="ph" class="text-xs text-slate-500 p-10"><i class="fa-solid fa-file-pdf text-4xl text-slate-700 block mb-2"></i>افتح ملف PDF أو EPUB لتبدأ القراءة</p>
       <div id="cvLoad" class="hidden absolute inset-0 flex items-center justify-center bg-slate-950/70"><i class="fa-solid fa-spinner fa-spin text-2xl text-orange-500"></i></div>
     </div>
-    <p class="text-[11px] text-slate-500">مرّر للأسفل للقراءة، واضغط على أي كلمة لتبدأ القراءة الصوتية منها وتتلوّن الكلمة المقروءة. يتذكر الموقع آخر صفحة وقفت عندها.</p>
+    <p class="text-[11px] text-slate-500">مرّر للأسفل للقراءة، واضغط على أي كلمة لتبدأ القراءة الصوتية منها. يتذكر الموقع آخر صفحة وقفت عندها. اختصارات الكيبورد: ← → للتنقل، والمسافة للتشغيل والإيقاف.</p>
   </div>
 
   <details class="card dt">
@@ -687,11 +684,16 @@ main,.sec{min-width:0;max-width:100%}
 </div>
 
 <!-- STATS MODAL (للمالك فقط) -->
-<div id="statModal" role="dialog" aria-modal="true" aria-label="إحصائيات الموقع" class="fixed inset-0 z-[97] bg-slate-950/80 backdrop-blur flex items-center justify-center p-4 hidden" onclick="if(event.target===this)statClose()">
+<div id="statModal" role="dialog" aria-modal="true" aria-label="الحاكم" class="fixed inset-0 z-[97] bg-slate-950/80 backdrop-blur flex items-center justify-center p-4 hidden" onclick="if(event.target===this)statClose()">
   <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-5 space-y-4 relative" style="max-height:calc(100dvh - 2rem);overflow-y:auto">
     <button onclick="statClose()" aria-label="إغلاق" class="absolute top-4 left-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-    <h3 class="text-lg font-bold text-center"><i class="fa-solid fa-chart-line text-emerald-400"></i> إحصائيات الموقع</h3>
+    <h3 class="text-lg font-bold text-center"><i class="fa-solid fa-crown text-amber-400"></i> الحاكم <span class="text-[11px] text-slate-500 font-normal">لوحة المالك</span></h3>
     <div id="statGrid" class="grid grid-cols-2 gap-2"></div>
+    <div><b class="text-xs text-slate-300">الزوار آخر 14 يومًا</b><div id="stChart" class="flex items-end gap-1 h-20 mt-2"></div></div>
+    <div class="space-y-2"><b class="text-xs text-slate-300">إعلان لكل الزوار</b>
+      <input id="annIn" maxlength="200" class="inp" placeholder="مثال: تحديث جديد اليوم!">
+      <div class="flex gap-2"><button class="btn-p" onclick="annSave(false)">نشر</button><button class="btn" onclick="annSave(true)">إزالة الإعلان</button></div></div>
+    <div><b class="text-xs text-slate-300">آخر الحسابات</b><div id="stUsers" class="mt-2 space-y-1"></div></div>
     <p class="text-center text-[11px] text-slate-500">تتحدّث الأرقام تلقائيًا وتظهر لحساب المالك فقط.</p>
   </div>
 </div>
@@ -729,8 +731,8 @@ main,.sec{min-width:0;max-width:100%}
 <nav id="bnav" class="md:hidden fixed inset-x-3 z-[45] flex" aria-label="التبويبات">
   <button data-t="home" onclick="tab('home')" class="bi text-slate-400"><i class="fa-solid fa-house"></i>الرئيسية</button>
   <button data-t="plot" onclick="tab('plot')" class="bi text-slate-400" style="display:none"><i class="fa-solid fa-diagram-project"></i>الحبكة</button>
- <button data-t="edit" onclick="tab('edit')" class="bi text-slate-400"><i class="fa-solid fa-spell-check"></i>التحرير</button>
   <button data-t="studio" onclick="tab('studio')" class="bi text-slate-400"><i class="fa-solid fa-feather-pointed"></i>التأليف</button>
+ <button data-t="edit" onclick="tab('edit')" class="bi text-slate-400"><i class="fa-solid fa-spell-check"></i>التحرير</button>
   <button data-t="reader" onclick="tab('reader')" class="bi text-slate-400"><i class="fa-solid fa-book-open"></i>القارئ</button>
   <button id="bmore" onclick="$('moreSheet').classList.toggle('hidden')" class="bi text-slate-400"><i class="fa-solid fa-ellipsis"></i>المزيد</button>
 </nav>
@@ -799,7 +801,7 @@ function renderAuth() {
   if (user) {
     const s = document.createElement('span'); s.className = 'text-xs font-bold text-orange-400 ml-2'; s.textContent = (user.email || '').replace(/@bayan\.local$/, '');
     const o = document.createElement('button'); o.className = 'btn'; o.textContent = 'خروج'; o.onclick = logout;
-    if (isAdmin) { const a = document.createElement('button'); a.className = 'btn'; a.innerHTML = '<i class="fa-solid fa-chart-line text-emerald-400"></i><span class="hidden sm:inline"> إحصائيات</span>'; a.onclick = statOpen; b.append(a, s, o); } else b.append(s, o);
+    if (isAdmin) { const a = document.createElement('button'); a.className = 'btn'; a.innerHTML = '<i class="fa-solid fa-crown text-amber-400"></i><span class="hidden sm:inline"> الحاكم</span>'; a.onclick = statOpen; b.append(a, s, o); } else b.append(s, o);
   } else {
     const i = document.createElement('button'); i.className = 'btn-p'; i.innerHTML = '<i class="fa-solid fa-user-lock"></i> دخول / حساب جديد'; i.onclick = openAuth;
     b.append(i);
@@ -884,10 +886,26 @@ async function adminSync() {
   try { const { data } = await db.from('admins').select('user_id').eq('user_id', user.id).maybeSingle(); isAdmin = !!data; } catch (e) { isAdmin = false; }
   renderAuth();
 }
+const E = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+async function annLoad() {
+  try { const { data } = await db.from('site_settings').select('value').eq('key', 'announcement').maybeSingle(); const v = (data && data.value) || ''; const b = $('annBar'); b.textContent = v; b.classList.toggle('hidden', !v); } catch (e) {}
+}
+async function annSave(clear) {
+  const v = clear ? '' : $('annIn').value.trim();
+  const { error } = await db.from('site_settings').upsert({ key: 'announcement', value: v });
+  if (error) { toast('تعذر حفظ الإعلان', 'err'); return; }
+  if (clear) $('annIn').value = '';
+  toast(clear ? 'أُزيل الإعلان' : 'نُشر الإعلان'); annLoad();
+}
+async function statExtra() {
+  const [d, u] = await Promise.all([db.rpc('admin_daily'), db.rpc('admin_users')]);
+  if (d.data) { const mx = Math.max(1, ...d.data.map(x => x.n)); $('stChart').innerHTML = d.data.map(x => '<div class="flex-1 rounded-t bg-orange-500/80" style="height:' + Math.max(4, x.n / mx * 100) + '%" title="' + E(x.d) + ': ' + x.n + '"></div>').join(''); }
+  if (u.data) $('stUsers').innerHTML = u.data.map(x => '<div class="flex justify-between text-[11px] text-slate-400"><span dir="ltr">' + E(x.u) + '</span><span>' + E((x.created_at || '').slice(0, 10)) + '</span></div>').join('');
+}
 async function statLoad() {
   const { data, error } = await db.rpc('admin_stats');
   if (error) { toast('تعذر جلب الإحصائيات', 'err'); return; }
-  statData = data; statPaint();
+  statData = data; statPaint(); statExtra();
 }
 function statPaint() {
   const d = statData || {}, n = v => v == null ? '—' : Number(v).toLocaleString('en-US');
@@ -900,7 +918,18 @@ function statOpen() {
   clearInterval(statT); statT = setInterval(statLoad, 20000);
 }
 function statClose() { $('statModal').classList.add('hidden'); clearInterval(statT); }
-presInit(); logVisit();
+presInit(); logVisit(); annLoad();
+function rdTab(n) {
+  document.querySelectorAll('.rdt').forEach((b, i) => b.classList.toggle('on', i === n));
+  document.querySelectorAll('.rdp').forEach((p, i) => p.classList.toggle('hidden', i !== n));
+}
+document.addEventListener('keydown', e => {
+  const tg = (e.target.tagName || '');
+  if ($('reader').classList.contains('hidden') || /INPUT|TEXTAREA|SELECT/.test(tg) || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); chPg(1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); chPg(-1); }
+  else if (e.key === ' ' && tg !== 'BUTTON') { e.preventDefault(); const p = $('ttsPause'), r = $('ttsResume'); if (!p.disabled) p.click(); else if (!r.disabled) r.click(); else readPlay(); }
+});
 
 /* ---------- حفظ البيانات ---------- */
 let chapters = [{ id: 1, title: 'الفصل الأول', content: '' }], active = 1, chars = [], plot = [], nid = 'n1', others = [];
