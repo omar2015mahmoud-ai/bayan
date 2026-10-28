@@ -1968,9 +1968,10 @@ async function layoutAiFill(blocks, tr, pair, fin) {
 let trBlob = null;
 /* EPUB بنفس تصميم الأصل: يبقى الكتاب كما هو (صور وأنماط وفهرس) ويُستبدل نص كل فقرة بترجمتها، ويُترجم الكتاب كله بغض النظر عن نطاق الصفحات */
 async function trBuildEpubLayout() {
-  const pair = $('pdir').value, rtl = pair.endsWith('ar'), fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
-  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,figcaption,td,th,dt,dd,blockquote,div', XNS = 'http://www.w3.org/XML/1998/namespace';
-  let tot = 0, done = 0, lost = 0, lastErr = '', fbDead = false; trStop = false; $('pgo').disabled = true;
+  const pair = $('pdir').value, rtl = pair.endsWith('ar'), eng = $('peng').value, isAi = eng === 'ai', fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
+  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,figcaption,td,th,dt,dd,blockquote,div', XNS = 'http://www.w3.org/XML/1998/namespace', wait = ms => new Promise(r => setTimeout(r, ms));
+  let lastErr = ''; trStop = false; $('pgo').disabled = true;
+  const pool = async (n, items, fn) => { let i = 0; await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length && !trStop) await fn(items[i++]); })); };
   try {
     if (typeof JSZip === 'undefined') throw new Error('تعذر تحميل أداة EPUB، تحقق من الاتصال');
     const zip = await JSZip.loadAsync(await trBlob.arrayBuffer());
@@ -1980,38 +1981,62 @@ async function trBuildEpubLayout() {
     const opf = px(await rd(rootPath)), base = rootPath.includes('/') ? rootPath.slice(0, rootPath.lastIndexOf('/') + 1) : '', man = {};
     opf.querySelectorAll('manifest > item').forEach(it => man[it.getAttribute('id')] = it.getAttribute('href'));
     const docs = [...opf.querySelectorAll('spine > itemref')].map(r => man[r.getAttribute('idref')]).filter(Boolean).map(h => decodeURIComponent(new URL(h.split('#')[0], 'http://x/' + base).pathname.slice(1)));
-    for (let d = 0; d < docs.length && !trStop; d++) {
-      $('pstat').textContent = `نسخة EPUB بنفس التصميم: ملف ${d + 1} من ${docs.length}`; $('pbar').style.width = (d / docs.length * 100) + '%';
-      const f = zip.file(docs[d]); if (!f) continue;
-      const doc = px(await f.async('string'), 'application/xhtml+xml');
-      if (doc.querySelector('parsererror')) { lost++; continue; }
+    /* 1) قراءة كل ملفات الكتاب وتجهيز الفقرات */
+    $('pstat').textContent = 'جارٍ قراءة الكتاب...';
+    const D = [];
+    for (const [d, p] of docs.entries()) {
+      const f = zip.file(p); if (!f) continue;
+      const doc = px(await f.async('string'), 'application/xhtml+xml'); if (doc.querySelector('parsererror')) continue;
       const els = [...doc.querySelectorAll(SEL)].filter(e => !e.querySelector(SEL) && /[A-Za-z\u0600-\u06FF]/.test(e.textContent));
-      const blocks = els.map(e => ({ text: e.textContent.replace(/\s+/g, ' ').trim() })), key = trId + '|5e|' + pair + '|' + d, tr = trBlk[key] || (trBlk[key] = []); let n = 0; tot += blocks.length;
-      if (blocks.some((_, k) => tr[k] == null)) {
-        try { await layoutAiFill(blocks, tr, pair, fin); } catch (e) { lastErr = errMsg(e); }
-        if (trStop) break;
-        if (!fbDead && blocks.some((_, k) => tr[k] == null)) {
-          await Promise.all([0, 1, 2, 3].map(async () => { while (n < blocks.length && !trStop && !fbDead) { const k = n++; if (tr[k] != null) continue; try { tr[k] = fin(await textPart(blocks[k].text, pair, 'gt')); } catch (e) { fbDead = true; lastErr = lastErr || errMsg(e); } } }));
-          if (trStop) break;
+      const key = trId + '|5e|' + pair + '|' + d;
+      D.push({ p, doc, els, blocks: els.map(e => ({ text: e.textContent.replace(/\s+/g, ' ').trim() })), tr: trBlk[key] || (trBlk[key] = []) });
+    }
+    const all = []; D.forEach(x => x.blocks.forEach((_, k) => all.push([x, k]))); const tot = all.length;
+    if (!tot) { $('pstat').textContent = 'لم أجد نصًا قابلًا للترجمة داخل الكتاب (قد يكون محميًا DRM).'; return toast('الملف بلا نص قابل للترجمة', 'err'); }
+    const t0 = Date.now(), cnt = () => all.filter(([x, k]) => x.tr[k] != null).length;
+    const upd = () => { const n = cnt(), s = (Date.now() - t0) / 1000, left = n ? Math.round(s / n * (tot - n)) : 0; $('pbar').style.width = (n / tot * 100) + '%'; $('pstat').textContent = `ترجمة ${n} من ${tot} فقرة` + (n > 5 && n < tot ? ` · المتبقي ≈ ${left > 90 ? Math.ceil(left / 60) + ' دقيقة' : left + ' ث'}` : ''); };
+    upd();
+    /* 2) الترجمة: دفعات الذكاء الاصطناعي بالتوازي (5 في وقت واحد) أو الطريقة المختارة بتوازي أعلى */
+    if (isAi) {
+      const G = []; D.forEach(x => { let cur = [], len = 0; x.blocks.forEach((b, k) => { if (x.tr[k] != null) return; if (cur.length && (len + b.text.length > 1800 || cur.length >= 25)) { G.push([x, cur]); cur = []; len = 0; } cur.push(k); len += b.text.length; }); if (cur.length) G.push([x, cur]); });
+      await pool(5, G, async ([x, ks]) => {
+        for (let a = 0; a < 2 && !trStop; a++) {
+          const st = []; try { await layoutAiFill(ks.map(k => x.blocks[k]), st, pair, fin); } catch (e) { lastErr = errMsg(e); await wait(3000); }
+          ks.forEach((k, j) => { if (st[j] != null) x.tr[k] = st[j]; });
+          if (ks.every(k => x.tr[k] != null)) break;
         }
-      }
-      els.forEach((e, k) => {
-        if (tr[k] == null) { lost++; return; } done++;
-        const keep = [...e.querySelectorAll('img,svg')]; e.textContent = tr[k]; keep.forEach(x => e.appendChild(x));
+        upd();
+      });
+    }
+    /* 3) ما تبقّى (أو كل شيء إن لم تكن الطريقة ذكاءً اصطناعيًا) فقرة فقرة بتوازي 8 */
+    if (!trStop) {
+      const rest = all.filter(([x, k]) => x.tr[k] == null); let dead = false, nn = 0;
+      await pool(eng === 'local' ? 1 : 8, rest, async ([x, k]) => {
+        if (dead) return;
+        try { x.tr[k] = fin(await textPart(x.blocks[k].text, pair, isAi ? 'gt' : eng)); } catch (e) { dead = true; lastErr = lastErr || errMsg(e); }
+        if (++nn % 8 === 0) upd();
+      });
+    }
+    upd();
+    if (trStop) { $('pstat').textContent = 'تم الإيقاف، الترجمة المنجزة محفوظة، اضغط الزر مرة ثانية للمتابعة'; return; }
+    /* 4) كتابة الترجمة داخل الكتاب */
+    let lost = 0;
+    D.forEach(x => {
+      x.els.forEach((e, k) => {
+        if (x.tr[k] == null) { lost++; return; }
+        const keep = [...e.querySelectorAll('img,svg')]; e.textContent = x.tr[k]; keep.forEach(y => e.appendChild(y));
         e.setAttribute('dir', rtl ? 'rtl' : 'ltr'); e.style.textAlign = 'start';
       });
-      const h = doc.documentElement; h.setAttribute('lang', rtl ? 'ar' : 'en'); h.setAttributeNS(XNS, 'xml:lang', rtl ? 'ar' : 'en');
-      zip.file(docs[d], new XMLSerializer().serializeToString(doc));
-    }
-    if (trStop) { $('pstat').textContent = 'تم الإيقاف، الترجمة المنجزة محفوظة، اضغط الزر مرة ثانية للمتابعة'; return; }
-    if (!tot) { $('pstat').textContent = 'لم أجد نصًا قابلًا للترجمة داخل الكتاب (قد يكون محميًا DRM).'; return toast('الملف بلا نص قابل للترجمة', 'err'); }
-    if (!done) { $('pstat').textContent = 'تعذرت الترجمة: ' + (lastErr || 'لم يرجع الذكاء الاصطناعي ترجمة') + '. لم يُنزَّل ملف. أضف مفتاحك من زر الذكاء الاصطناعي أعلى الصفحة أو أعد المحاولة.'; return toast('تعذرت الترجمة', 'err'); }
+      const h = x.doc.documentElement; h.setAttribute('lang', rtl ? 'ar' : 'en'); h.setAttributeNS(XNS, 'xml:lang', rtl ? 'ar' : 'en');
+      zip.file(x.p, new XMLSerializer().serializeToString(x.doc));
+    });
+    if (lost === tot) { $('pstat').textContent = 'تعذرت الترجمة: ' + (lastErr || 'لم تُرجع الطريقة المختارة ترجمة') + '. لم يُنزَّل ملف. جرّب الطريقة 2 أو أضف مفتاحك من زر الذكاء الاصطناعي.'; return toast('تعذرت الترجمة', 'err'); }
     opf.querySelectorAll('language').forEach(l => l.textContent = rtl ? 'ar' : 'en');
     const sp = opf.querySelector('spine'); if (sp) sp.setAttribute('page-progression-direction', rtl ? 'rtl' : 'ltr');
     zip.file(rootPath, new XMLSerializer().serializeToString(opf)); zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
-    $('pbar').style.width = '100%'; $('pstat').textContent = 'اكتمل ✓' + (lost ? ` · ${lost} نص بقي بلغته الأصلية لتعذّر ترجمته${lastErr ? ' (' + lastErr + ')' : ''}، أعد الضغط لإكمالها` : '');
+    $('pbar').style.width = '100%'; $('pstat').textContent = 'اكتمل ✓ ' + (tot - lost) + ' من ' + tot + ' فقرة' + (lost ? ` · بقيت ${lost} فقرة بلغتها الأصلية${lastErr ? ' (' + lastErr + ')' : ''}، أعد الضغط على الزر لإكمالها` : '');
     dl(await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip', compression: 'DEFLATE' }), trName + '-translated-layout.epub');
-    toast(lost ? 'تم الحفظ، وبقيت بعض النصوص بلا ترجمة' : 'تم حفظ EPUB بنفس تصميم الأصل', lost ? 'err' : undefined);
+    toast(lost ? 'تم الحفظ، وبقيت بعض الفقرات بلا ترجمة' : 'تم حفظ EPUB بنفس تصميم الأصل', lost ? 'err' : undefined);
   } catch (e) { $('pstat').textContent = 'توقفت: ' + errMsg(e); toast('تعذر البناء: ' + errMsg(e), 'err'); }
   finally { $('pgo').disabled = false; }
 }
