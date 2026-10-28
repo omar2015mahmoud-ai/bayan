@@ -288,6 +288,13 @@ main,.sec{min-width:0;max-width:100%}
     <div class="space-y-2 min-w-0"><h2 id="hmHi" class="amiri text-3xl font-bold text-stone-100">أهلًا بك في بيان</h2><p class="text-xs text-slate-300 leading-6">اكتب رواياتك، واقرأ كتبك، وترجمها، وحرّر نصوصك في مكان واحد.</p>
     </div></div>
 
+  <div class="card space-y-3" id="fbCard">
+    <div class="sh"><span class="ic"><i class="fa-solid fa-comment-dots"></i></span><div class="flex-1 min-w-0"><h2>بلّغ عن مشكلة أو اقترح ميزة</h2><p>ما تحتاج حسابًا. اكتب ما لاحظته أو ما تتمنى إضافته للموقع.</p></div></div>
+    <div class="rdtabs" role="tablist" aria-label="نوع الرسالة"><button id="fbK1" class="rdt on" role="tab" onclick="fbKind('bug')">🐞 مشكلة</button><button id="fbK2" class="rdt" role="tab" onclick="fbKind('idea')">💡 اقتراح</button></div>
+    <textarea id="fbTx" maxlength="1000" rows="3" aria-label="نص الرسالة" class="w-full bg-slate-950 rounded-xl p-3 text-sm leading-relaxed text-slate-200 border border-slate-800 focus:outline-none focus:border-orange-500/50 resize-y" placeholder="اشرح المشكلة أو الفكرة باختصار..."></textarea>
+    <div class="flex flex-wrap items-center gap-2"><button class="btn-p" onclick="fbSend()"><i class="fa-solid fa-paper-plane"></i> إرسال</button><a id="twLink" href="#" target="_blank" rel="noopener noreferrer" class="btn hidden"><i class="fa-brands fa-x-twitter"></i> تابعني على تويتر</a></div>
+  </div>
+
   <div class="strip">
     <div class="tile"><b id="hmT">0</b><span>كلمة في روايتك</span></div>
     <div class="tile"><b id="hmC">1</b><span>فصل</span></div>
@@ -694,6 +701,7 @@ main,.sec{min-width:0;max-width:100%}
       <input id="annIn" maxlength="200" class="inp" placeholder="مثال: تحديث جديد اليوم!">
       <div class="flex gap-2"><button class="btn-p" onclick="annSave(false)">نشر</button><button class="btn" onclick="annSave(true)">إزالة الإعلان</button></div></div>
     <div><b class="text-xs text-slate-300">آخر الحسابات</b><div id="stUsers" class="mt-2 space-y-1"></div></div>
+    <div><b class="text-xs text-slate-300">البلاغات والاقتراحات</b><div id="stFb" class="mt-2 space-y-2"></div></div>
     <p class="text-center text-[11px] text-slate-500">تتحدّث الأرقام تلقائيًا وتظهر لحساب المالك فقط.</p>
   </div>
 </div>
@@ -897,7 +905,27 @@ async function annSave(clear) {
   if (clear) $('annIn').value = '';
   toast(clear ? 'أُزيل الإعلان' : 'نُشر الإعلان'); annLoad();
 }
+const TW_HANDLE = ''; // اكتب حسابك على تويتر هنا بدون @
+let fbK = 'bug';
+function fbKind(k) { fbK = k; $('fbK1').classList.toggle('on', k === 'bug'); $('fbK2').classList.toggle('on', k === 'idea'); }
+async function fbSend() {
+  const v = $('fbTx').value.trim();
+  if (v.length < 3) { toast('اكتب تفاصيل أكثر', 'err'); return; }
+  try { if (Date.now() - (+sessionStorage.getItem('bayan_fb') || 0) < 30000) { toast('انتظر قليلًا قبل إرسال رسالة أخرى', 'err'); return; } } catch (e) {}
+  const { error } = await db.from('feedback').insert({ kind: fbK, body: v });
+  if (error) { toast('تعذر الإرسال، حاول لاحقًا', 'err'); return; }
+  try { sessionStorage.setItem('bayan_fb', String(Date.now())); } catch (e) {}
+  $('fbTx').value = ''; toast('وصلت رسالتك، شكرًا لك');
+}
+async function fbLoad() {
+  const f = await db.from('feedback').select('id,kind,body,created_at').order('created_at', { ascending: false }).limit(20);
+  if (!f.data) return;
+  $('stFb').innerHTML = f.data.length ? f.data.map(x => '<div class="rounded-lg border border-slate-800 p-2 text-xs"><div class="flex justify-between text-[10px] text-slate-500"><span>' + (x.kind === 'bug' ? '🐞 مشكلة' : '💡 اقتراح') + '</span><span>' + E((x.created_at || '').slice(0, 10)) + '</span></div><p class="mt-1 text-slate-200 whitespace-pre-wrap break-words">' + E(x.body) + '</p><button class="btn !text-[10px] mt-1" onclick="fbDone(\'' + E(x.id) + '\')">تم</button></div>').join('') : '<p class="text-[11px] text-slate-500">لا توجد رسائل</p>';
+}
+async function fbDone(id) { await db.from('feedback').delete().eq('id', id); fbLoad(); }
+if (TW_HANDLE) { const a = $('twLink'); a.href = 'https://x.com/' + TW_HANDLE; a.classList.remove('hidden'); }
 async function statExtra() {
+  fbLoad();
   const [d, u] = await Promise.all([db.rpc('admin_daily'), db.rpc('admin_users')]);
   if (d.data) { const mx = Math.max(1, ...d.data.map(x => x.n)); $('stChart').innerHTML = d.data.map(x => '<div class="flex-1 rounded-t bg-orange-500/80" style="height:' + Math.max(4, x.n / mx * 100) + '%" title="' + E(x.d) + ': ' + x.n + '"></div>').join(''); }
   if (u.data) $('stUsers').innerHTML = u.data.map(x => '<div class="flex justify-between text-[11px] text-slate-400"><span dir="ltr">' + E(x.u) + '</span><span>' + E((x.created_at || '').slice(0, 10)) + '</span></div>').join('');
