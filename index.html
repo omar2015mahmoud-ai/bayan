@@ -23,7 +23,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -198,6 +197,22 @@ details.dt[open]>summary::after{transform:rotate(180deg)}
 details.dt:not(.card){padding:.7rem .9rem;border-radius:1rem;background:rgba(2,6,23,.4);border:1px solid rgba(51,65,85,.55)}
 .btn:disabled,.btn-p:disabled{opacity:.45;cursor:not-allowed}
 #rfFx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1}
+/* عجلة أدوات الكتابة العائمة */
+.wheel{position:fixed;width:60px;height:60px;z-index:60;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.wheel.off{display:none}
+.wheel::before{content:"";position:absolute;left:50%;top:50%;width:calc(var(--rr,140px)*2);height:calc(var(--rr,140px)*2);margin:calc(var(--rr,140px)*-1) 0 0 calc(var(--rr,140px)*-1);border-radius:9999px;background:radial-gradient(circle,rgba(2,6,23,.88) 0,rgba(2,6,23,.72) 60%,rgba(2,6,23,0) 71%);transform:scale(.15);opacity:0;pointer-events:none;transition:transform .5s cubic-bezier(.2,.9,.25,1.1),opacity .3s}
+.wheel.open::before{transform:scale(1);opacity:1}
+.wheel .wc{position:absolute;inset:0;border-radius:9999px;background:#ea580c;color:#fff;border:0;font-size:1.25rem;display:flex;align-items:center;justify-content:center;z-index:5;touch-action:none;cursor:grab;box-shadow:0 0 0 6px rgba(234,88,12,.22),0 6px 18px rgba(0,0,0,.55);transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.wheel.open .wc{transform:rotate(135deg)}
+.wheel.drag .wc{cursor:grabbing}
+.wheel .wi{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:9999px;background:#0f172a;border:1px solid #475569;color:#e2e8f0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:15px;line-height:1.1;touch-action:none;transform:translate(0,0) scale(.2);opacity:0;visibility:hidden;pointer-events:none;transition:transform .5s cubic-bezier(.2,.9,.25,1.15),opacity .3s,visibility 0s .5s,background .15s}
+.wheel .wi small{font-size:9px;color:#94a3b8;white-space:nowrap}
+.wheel.open .wi{opacity:1;visibility:visible;pointer-events:auto;transform:translate(var(--x),var(--y)) scale(1);transition:transform .5s cubic-bezier(.2,.9,.25,1.15) var(--d),opacity .3s var(--d),visibility 0s,background .15s}
+.wheel.open.rot .wi{transition:none}
+.wheel .wi:active{background:#ea580c;border-color:#ea580c}
+.wheel .wr{position:absolute;top:50%;margin-top:-17px;width:34px;height:34px;border-radius:9999px;background:#0f172a;border:1px solid #475569;color:#94a3b8;display:none;align-items:center;justify-content:center;z-index:4;font-size:12px}
+.wheel.open .wr{display:flex}
+@media (prefers-reduced-motion:reduce){.wheel,.wheel *{transition:none!important}}
 </style>
 <style id="uiRefresh">
 body{background:#0a0f1a!important}
@@ -230,9 +245,9 @@ main,.sec{min-width:0;max-width:100%}
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
-<div id="splash" dir="rtl" role="presentation"><i class="sb sb1"></i><i class="sb sb2"></i><i class="sb sb3"></i><div class="sg"><span class="sw">موشوكو عمك</span><b class="sl"></b></div></div>
+<div id="splash" dir="rtl" role="presentation"><i class="sb sb1"></i><i class="sb sb2"></i><i class="sb sb3"></i><div class="sg"><svg class="sgl" viewBox="0 0 64 64" aria-hidden="true"><use href="#logo"/></svg><span class="sw">بيان</span><b class="sl"></b><span class="sk">منصة الكتب والترجمة</span><span class="st"><em>اكتب</em><em>اقرأ</em><em>ترجم</em></span></div></div>
 <style>
-#splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;background:radial-gradient(120% 90% at 50% 45%,#121a2e 0%,#0b0f19 55%,#05070d 100%);animation:spOut .9s ease 3.3s forwards}
+#splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;background:radial-gradient(120% 90% at 50% 45%,#121a2e 0%,#0b0f19 55%,#05070d 100%);animation:spOut .9s ease 3.9s forwards}
 #splash::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(90% 70% at 50% 50%,transparent 55%,rgba(0,0,0,.65) 100%)}
 .sb{position:absolute;border-radius:50%;filter:blur(70px);opacity:0;animation:spBlob 3.6s ease-in-out both}
 .sb1{width:55vmax;height:55vmax;left:-15vmax;top:-12vmax;background:rgba(234,88,12,.42)}
@@ -240,8 +255,15 @@ main,.sec{min-width:0;max-width:100%}
 .sb3{width:30vmax;height:30vmax;left:35%;top:55%;background:rgba(45,212,191,.22);animation-delay:.5s}
 .sg{position:relative;z-index:2;overflow:hidden;padding:clamp(26px,7vw,46px) clamp(34px,10vw,84px);border-radius:30px;border:1px solid rgba(255,255,255,.16);background:linear-gradient(145deg,rgba(255,255,255,.11),rgba(255,255,255,.03));-webkit-backdrop-filter:blur(26px) saturate(150%);backdrop-filter:blur(26px) saturate(150%);box-shadow:0 30px 80px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(255,255,255,.04);text-align:center;animation:spCard 1.1s cubic-bezier(.2,.8,.2,1) .2s both}
 .sg::before{content:"";position:absolute;top:0;bottom:0;width:45%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);animation:spSweep 1.5s ease 1.1s both}
-.sw{display:block;font-family:Amiri,Cairo,serif;font-weight:700;font-size:clamp(38px,11vw,72px);line-height:1.3;background:linear-gradient(180deg,#fff 15%,#fed7aa 55%,#fb923c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#fff;filter:drop-shadow(0 6px 24px rgba(251,146,60,.35));animation:spText 1.5s cubic-bezier(.2,.8,.2,1) .55s both}
+.sw{display:block;font-family:Amiri,Cairo,serif;font-weight:700;font-size:clamp(48px,14vw,84px);line-height:1.3;background:linear-gradient(180deg,#fff 15%,#fed7aa 55%,#fb923c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#fff;filter:drop-shadow(0 6px 24px rgba(251,146,60,.35));animation:spText 1.5s cubic-bezier(.2,.8,.2,1) .55s both}
 .sl{display:block;height:1px;margin:14px auto 0;width:0;background:linear-gradient(90deg,transparent,rgba(253,186,116,.9),transparent);animation:spLine 1.2s ease 1.3s forwards}
+.sgl{display:block;width:clamp(64px,18vw,92px);height:clamp(64px,18vw,92px);margin:0 auto 12px;filter:drop-shadow(0 10px 28px rgba(251,146,60,.5));animation:spLogo 1.2s cubic-bezier(.2,.9,.25,1.2) .35s both}
+.sk{display:block;margin-top:14px;font:600 clamp(13px,3.6vw,16px)/1.6 Cairo,sans-serif;color:#cbd5e1;letter-spacing:.04em;animation:spRise .9s ease 1.5s both}
+.st{display:flex;justify-content:center;gap:.5rem;margin-top:14px}
+.st em{font-style:normal;font:700 12px/1 Cairo,sans-serif;padding:.4rem .85rem;border-radius:999px;color:#fdba74;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.35);animation:spRise .8s ease both}
+.st em:nth-child(1){animation-delay:1.75s}.st em:nth-child(2){animation-delay:1.95s}.st em:nth-child(3){animation-delay:2.15s}
+@keyframes spLogo{from{opacity:0;transform:scale(.4) rotate(-14deg);filter:blur(10px)}to{opacity:1;transform:none}}
+@keyframes spRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 @keyframes spCard{from{opacity:0;transform:translateY(18px) scale(.94);filter:blur(14px)}to{opacity:1;transform:none;filter:none}}
 @keyframes spText{from{opacity:0;letter-spacing:.35em;filter:blur(16px)}to{opacity:1;letter-spacing:0;filter:blur(0)}}
 @keyframes spLine{to{width:78%}}
@@ -249,7 +271,7 @@ main,.sec{min-width:0;max-width:100%}
 @keyframes spBlob{0%{opacity:0;transform:translate(0,0) scale(.9)}35%{opacity:1}100%{opacity:.85;transform:translate(3vmax,-2vmax) scale(1.12)}}
 @keyframes spOut{to{opacity:0;visibility:hidden;transform:scale(1.06);filter:blur(18px)}}
 </style>
-<script>(function(){var s=document.getElementById('splash');if(!s)return;var d=function(){if(!s.parentNode)return;s.style.transition='opacity .8s ease,transform .8s ease,filter .8s ease';s.style.opacity='0';s.style.transform='scale(1.06)';s.style.filter='blur(18px)';s.style.pointerEvents='none';setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},900)};s.addEventListener('click',d);setTimeout(d,3300)})();</script>
+<script>(function(){var s=document.getElementById('splash');if(!s)return;var d=function(){if(!s.parentNode)return;s.style.transition='opacity .8s ease,transform .8s ease,filter .8s ease';s.style.opacity='0';s.style.transform='scale(1.06)';s.style.filter='blur(18px)';s.style.pointerEvents='none';setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s)},900)};s.addEventListener('click',d);setTimeout(d,3900)})();</script>
 <noscript><div style="position:fixed;inset:0;z-index:100000;background:#0b0f19;color:#f3f4f6;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:sans-serif">يحتاج الموقع إلى تفعيل جافاسكربت ليعمل.</div></noscript>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fb923c"/><stop offset=".55" stop-color="#ec4899"/><stop offset="1" stop-color="#7c3aed"/></linearGradient><radialGradient id="lgh" cx=".2" cy=".05" r=".9"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><symbol id="logo" viewBox="0 0 64 64"><defs><linearGradient id="gL" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#fed7aa"/><stop offset="1" stop-color="#fb923c"/></linearGradient><filter id="gG" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4"/></filter><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".5" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity=".06"/></linearGradient><linearGradient id="gB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".55" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".5"/></linearGradient><linearGradient id="gT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient><filter id="gF" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter><filter id="gS" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation=".9"/></filter><clipPath id="gC"><rect width="64" height="64" rx="17"/></clipPath></defs><rect width="64" height="64" rx="17" fill="#0a1020"/><g clip-path="url(#gC)"><circle cx="17" cy="48" r="17" fill="#f59e0b" filter="url(#gF)"/><circle cx="49" cy="16" r="16" fill="#2dd4bf" opacity=".85" filter="url(#gF)"/><rect width="64" height="64" fill="url(#gT)"/></g><rect x=".8" y=".8" width="62.4" height="62.4" rx="16.3" fill="none" stroke="url(#gB)" stroke-width="1.4" stroke-opacity=".7"/><path d="M13 31C13 31 15 42 29 42H42C49 42 52 37 52 27" fill="none" stroke="#fb923c" stroke-opacity=".7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#gG)"/><path d="M13 31C13 31 15 42 29 42H42C49 42 52 37 52 27" fill="none" stroke="url(#gL)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="31" cy="52" r="4.2" fill="#fb923c" fill-opacity=".7" filter="url(#gG)"/><circle cx="31" cy="52" r="3.8" fill="url(#gL)"/><path d="M15 22c3-6 9-9 16-9" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="1.2" stroke-linecap="round"/></symbol></svg>
 
@@ -356,6 +378,7 @@ main,.sec{min-width:0;max-width:100%}
     <button class="btn" onclick="edtUndo()">تراجع</button>
   </div>
   <button class="btn w-full" onclick="edtCopy()"><i class="fa-solid fa-copy"></i> نسخ النص</button>
+  <button class="btn w-full" onclick="kufrOpen()"><i class="fa-solid fa-book"></i> قاموس الكلمات الكفرية (عرض وتعديل)</button>
   <div id="edtOut" class="text-xs text-slate-300"></div>
 </section>
 
@@ -416,17 +439,24 @@ main,.sec{min-width:0;max-width:100%}
       </div>
 
       <div data-tbp="fmt" class="tbp hidden space-y-3">
-        <div class="rw">
-          <button class="btn" onclick="wrap('«','»','الحوار هنا')">« » حوار</button>
-          <button class="btn" onclick="wrap('(',')','أفكار')">(أفكار)</button>
-          <button class="btn" onclick="dlgLine()">— سطر حوار</button>
-          <button class="btn" onclick="wrap('\n\n❦ ❦ ❦\n\n','','')">❦ فاصل</button>
+        <div id="wheel" class="wheel off" role="group" aria-label="عجلة أدوات الكتابة العائمة">
+          <button type="button" class="wr" style="right:64px" onclick="wheelRot(-1)" aria-label="تدوير لليمين"><i class="fa-solid fa-rotate-right"></i></button>
+          <button type="button" class="wr" style="left:64px" onclick="wheelRot(1)" aria-label="تدوير لليسار"><i class="fa-solid fa-rotate-left"></i></button>
+          <button type="button" class="wc" id="wheelC" onclick="wheelToggle()" aria-label="فتح أو إغلاق الأدوات، واسحبه لتغيير مكان العجلة" aria-expanded="false"><i class="fa-solid fa-pen"></i></button>
+          <button type="button" class="wi" onclick="wrap('«','»','الحوار هنا')">«»<small>حوار</small></button>
+          <button type="button" class="wi" onclick="wrap('(',')','أفكار')">( )<small>أفكار</small></button>
+          <button type="button" class="wi" onclick="dlgLine()">—<small>سطر حوار</small></button>
+          <button type="button" class="wi" onclick="wrap('\n\n❦ ❦ ❦\n\n','','')">❦<small>فاصل</small></button>
+          <button type="button" class="wi" onclick="$('imgIn').click()"><i class="fa-solid fa-image"></i><small>صورة</small></button>
+          <button type="button" class="wi" onclick="wFmt()"><i class="fa-solid fa-broom"></i><small>تنسيق</small></button>
+          <button type="button" class="wi" onclick="rmTash()">َ<small>بلا تشكيل</small></button>
+          <button type="button" class="wi" onclick="edFs(1)" aria-label="تكبير الخط">A+<small>تكبير</small></button>
+          <button type="button" class="wi" onclick="edFs(-1)" aria-label="تصغير الخط">A−<small>تصغير</small></button>
         </div>
-        <div class="rw">
-          <button class="btn" onclick="wFmt()"><i class="fa-solid fa-broom"></i> تنسيق الفصل</button>
-          <button class="btn" onclick="rmTash()">إزالة التشكيل</button>
-          <button class="btn" onclick="edFs(1)" aria-label="تكبير الخط">A+</button><button class="btn" onclick="edFs(-1)" aria-label="تصغير الخط">A−</button>
+        <input type="file" id="imgIn" accept="image/*" class="hidden" onchange="imgPick(event)">
+        <div class="rw justify-between">
           <label class="text-[11px] flex items-center gap-1 text-slate-300"><input type="checkbox" id="smart" class="accent-orange-600" onchange="lsSet('bayan_smart',this.checked?'1':'0')"> كتابة ذكية</label>
+<div class="flex gap-2"><button type="button" class="btn" onclick="wheelShow()" id="wheelShowB"><i class="fa-solid fa-circle-notch"></i> العجلة العائمة</button><button type="button" class="btn" onclick="wheelReset()" title="إعادة العجلة إلى موضعها الافتراضي"><i class="fa-solid fa-location-crosshairs"></i></button></div>
         </div>
       </div>
 
@@ -494,6 +524,7 @@ main,.sec{min-width:0;max-width:100%}
         <textarea id="chBody" spellcheck="true" lang="ar" rows="16" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 amiri text-lg leading-relaxed resize-none focus:outline-none focus:border-orange-500/50" placeholder="اكتب روايتك هنا..."></textarea>
         <div id="fixView" class="hidden absolute inset-0 flex-col rounded-xl border border-red-500/60 bg-slate-900 overflow-hidden cursor-pointer" onclick="fixClose()"><div id="fixBar" class="shrink-0 px-3 py-2 text-[11px] font-bold bg-red-950/70 text-red-200 border-b border-red-500/30"></div><div id="fixTxt" class="flex-1 overflow-y-auto p-4 amiri whitespace-pre-wrap"></div></div>
       </div>
+      <div id="chImgs" class="hidden bg-slate-950 rounded-xl p-3 space-y-2 text-xs"></div>
       <div id="chOut" class="hidden bg-slate-950 rounded-xl p-3 space-y-2 text-xs"></div>
       <div id="spOut" class="hidden bg-slate-950 rounded-xl p-3 space-y-2 max-h-56 overflow-y-auto text-xs"></div>
       <div id="stats" class="text-[11px] text-slate-400"></div>
@@ -597,14 +628,18 @@ main,.sec{min-width:0;max-width:100%}
         </div>
         <div class="space-y-1"><label for="pmodel" class="lbl">النموذج (اختياري، الفارغ = من إعداداتك)</label><input id="pmodel" class="inp" dir="ltr"></div>
         <label class="text-xs flex items-center gap-2"><input type="checkbox" id="rep" checked class="accent-orange-600"> استبدال (God / الإله وما يشبهها ← حاكم) في الترجمة العربية</label>
+        <label class="text-xs flex items-center gap-2"><input type="checkbox" id="autoPurge" checked class="accent-orange-600"> تنقية تلقائية أثناء الترجمة (قاموس الكلمات ← حاكم) بدون ضغط أي زر</label>
+        <label class="text-xs flex items-center gap-2"><input type="checkbox" id="autoArab" checked class="accent-orange-600"> تعريب الأسماء التي لم تُترجم تلقائيًا بحروف عربية (Asura ← أسورا)</label>
+        <label class="text-xs flex items-center gap-2"><input type="checkbox" id="imgReal" class="accent-orange-600"> وضع الصورة الأصلية نفسها في صفحتها بدل كلمة «صورة» (تُقصّ أثناء الترجمة)</label>
+        <div class="flex gap-2"><button class="btn flex-1" onclick="glOpen()"><i class="fa-solid fa-spell-check"></i> قاموس المترجم (تغيير كلمات)</button><button class="btn flex-1" onclick="kufrOpen()"><i class="fa-solid fa-book"></i> قاموس التنقية</button></div>
       </div>
       <div class="card space-y-3">
         <div class="flex items-center gap-2"><span class="stp">3</span><b class="text-sm">ابدأ وحمّل النتيجة</b></div>
         <div class="w-full bg-slate-800 rounded-full h-2"><div id="pbar" class="bg-orange-600 h-2 rounded-full" style="width:0%"></div></div>
         <p id="pstat" class="text-xs text-slate-300 min-h-[1rem]"></p>
         <div class="flex gap-2"><button id="pgo" class="btn-p flex-1" onclick="trGo()"><i class="fa-solid fa-wand-magic-sparkles"></i> بدء / متابعة</button><button class="btn" onclick="trStop=true">إيقاف</button></div>
-        <button class="btn w-full" onclick="trDl()"><i class="fa-solid fa-download"></i> تنزيل PDF المترجم</button>
-        <button class="btn-p w-full" onclick="trBuildLayout()"><i class="fa-solid fa-file-pdf"></i> تنزيل بنفس تصميم الأصل (صور وتنسيق) — PDF أو EPUB</button>
+        <button class="btn-p w-full" onclick="trBuildLayout()"><i class="fa-solid fa-file-pdf"></i> تنزيل بنفس تنسيق الملف الأصلي (PDF أو EPUB)</button>
+        <button class="btn w-full" onclick="trDl()"><i class="fa-solid fa-download"></i> تنزيل الترجمة (كل الصفحات أسطر متتابعة)</button>
       </div>
     </div>
     <div class="space-y-4">
@@ -612,6 +647,9 @@ main,.sec{min-width:0;max-width:100%}
         <div class="flex items-center justify-between"><button class="btn" onclick="vNav(-1)">السابقة</button><b id="vnum" class="text-xs text-orange-400">0 / 0</b><button class="btn" onclick="vNav(1)">التالية</button></div>
         <textarea id="vtr" rows="12" class="w-full bg-slate-950 rounded-xl p-4 text-base leading-relaxed text-slate-100 amiri border border-slate-800 focus:outline-none focus:border-orange-500/50" placeholder="الترجمة تظهر هنا وتقدر تعدّلها قبل بناء الملف"></textarea>
         <div class="flex gap-2"><button class="btn flex-1" onclick="trPurge(false)"><i class="fa-solid fa-broom"></i> تنقية هذه الصفحة ← حاكم</button><button class="btn-p flex-1" onclick="trPurge(true)"><i class="fa-solid fa-broom"></i> تنقية كل الصفحات ← حاكم</button></div>
+        <button class="btn w-full" onclick="trAddImgs()"><i class="fa-solid fa-image"></i> كشف الصور وإضافة صفحة «صورة» للصفحات المترجمة</button>
+        <button class="btn w-full" onclick="trRefix()"><i class="fa-solid fa-wand-magic-sparkles"></i> تطبيق القاموس + التنقية + التعريب على كل الصفحات المترجمة</button>
+        <div class="flex gap-2"><button class="btn flex-1" onclick="trToEdit(false)"><i class="fa-solid fa-spell-check"></i> هذه الصفحة ← التحرير</button><button class="btn-p flex-1" onclick="trToEdit(true)"><i class="fa-solid fa-spell-check"></i> كل الترجمة ← التحرير والتدقيق</button></div>
       </div>
       <div id="trList" class="card space-y-2 hidden"></div>
     </div>
@@ -719,6 +757,28 @@ main,.sec{min-width:0;max-width:100%}
 </div>
 
 <!-- PRIVACY MODAL -->
+<!-- KUFR DICTIONARY MODAL -->
+<div id="kufrModal" role="dialog" aria-modal="true" aria-label="قاموس الكلمات الكفرية" class="fixed inset-0 z-[97] bg-slate-950/85 backdrop-blur flex items-start sm:items-center justify-center p-2 hidden" onclick="if(event.target===this)kufrClose()">
+  <div class="card w-full max-w-lg !p-4 flex flex-col gap-3" style="max-height:calc(100dvh - 1rem)">
+    <div class="flex items-center justify-between shrink-0"><h3 class="font-bold text-sm"><i class="fa-solid fa-book text-orange-500"></i> قاموس الكلمات الكفرية <span id="kfCnt" class="text-[11px] text-slate-500 font-normal"></span></h3><button class="btn !py-1" onclick="kufrClose()" aria-label="إغلاق">✕</button></div>
+    <p class="text-[11px] text-slate-400 leading-6 shrink-0">يُطبَّق مع كل أزرار «تنقية ← حاكم» (التحرير والترجمة والقارئ)، ويشمل «الله» وصيغه تلقائيًا. عطّل أي كلمة لا تريدها، وأضف كلماتك.</p>
+    <input id="kfQ" class="inp shrink-0" placeholder="ابحث في القاموس" oninput="kufrRender()">
+    <div class="flex gap-2 shrink-0"><input id="kfA" class="inp" placeholder="كلمة تريد استبدالها"><input id="kfB" class="inp" placeholder="البديل (فارغ = حذف)" onkeydown="if(event.key==='Enter')kufrAdd()"><button class="btn-p" onclick="kufrAdd()" aria-label="إضافة">+</button></div>
+    <div id="kfList" class="flex-1 min-h-0 overflow-y-auto text-xs space-y-3 pr-0.5"></div>
+    <div class="flex gap-2 shrink-0"><button class="btn flex-1" onclick="kufrAll(1)">تفعيل الكل</button><button class="btn flex-1" onclick="kufrAll(0)">تعطيل الكل</button></div>
+  </div>
+</div>
+
+<!-- TRANSLATOR GLOSSARY MODAL -->
+<div id="glModal" role="dialog" aria-modal="true" aria-label="قاموس المترجم" class="fixed inset-0 z-[97] bg-slate-950/85 backdrop-blur flex items-start sm:items-center justify-center p-2 hidden" onclick="if(event.target===this)glClose()">
+  <div class="card w-full max-w-lg !p-4 flex flex-col gap-3" style="max-height:calc(100dvh - 1rem)">
+    <div class="flex items-center justify-between shrink-0"><h3 class="font-bold text-sm"><i class="fa-solid fa-spell-check text-orange-500"></i> قاموس المترجم <span id="glCnt" class="text-[11px] text-slate-500 font-normal"></span></h3><button class="btn !py-1" onclick="glClose()" aria-label="إغلاق">✕</button></div>
+    <p class="text-[11px] text-slate-400 leading-6 shrink-0">يُطبَّق على كل ترجمة إنجليزي ← عربي: الكلمة الإنجليزية تُحمى من المترجم وتُكتب بالبديل الذي تحدده (مثال: Asura ← أسورا). ويقبل أيضًا كلمة عربية تريد تغييرها في الترجمة. أي اسم غير موجود هنا يُعرَّب تلقائيًا بالنطق.</p>
+    <div class="flex gap-2 shrink-0"><input id="glA" dir="auto" class="inp" placeholder="الكلمة (Asura)"><input id="glB" class="inp" placeholder="البديل (أسورا)" onkeydown="if(event.key==='Enter')glAdd()"><button class="btn-p" onclick="glAdd()" aria-label="إضافة">+</button></div>
+    <div id="glList" class="flex-1 min-h-0 overflow-y-auto text-xs space-y-2 pr-0.5"></div>
+  </div>
+</div>
+
 <div id="privModal" role="dialog" aria-modal="true" aria-label="الخصوصية والشروط" class="fixed inset-0 z-[97] bg-slate-950/85 backdrop-blur flex items-start sm:items-center justify-center p-2 hidden" onclick="if(event.target===this)closePriv()">
   <div class="card w-full max-w-lg !p-4 flex flex-col gap-3" style="max-height:calc(100dvh - 1rem)">
     <div class="flex items-center justify-between shrink-0"><h3 class="font-bold text-sm"><i class="fa-solid fa-shield-halved text-orange-500"></i> الخصوصية والشروط</h3><button class="btn !py-1" onclick="closePriv()" aria-label="إغلاق">✕</button></div>
@@ -1030,7 +1090,7 @@ function saveCh() {
 }
 function loadCh() {
   const c = chapters.find(x => x.id === active);
-  if (c) { $('chTitle').value = c.title; $('chBody').value = c.content; $('chSum').value = c.summary || ''; stats(); chPlotRender(); }
+  if (c) { $('chTitle').value = c.title; $('chBody').value = c.content; $('chSum').value = c.summary || ''; stats(); chPlotRender(); imgRender(); }
 }
 function renderList() {
   const ul = $('chList'); ul.innerHTML = '';
@@ -1087,22 +1147,80 @@ $('chBody').addEventListener('input', () => { saveCh(); stats(); autoSave(); });
 $('chTitle').addEventListener('input', () => { saveCh(); renderList(); autoSave(); });
 ['nTitle', 'nAuthor', 'nGenre', 'nNotes'].forEach(i => $(i).addEventListener('input', autoSave));
 
-function pdfFromHtml(html, name) {
-  const w = document.createElement('div');
-  w.dir = 'rtl'; w.style.cssText = 'font-family:Amiri,serif;color:#000;background:#fff;padding:10px;font-size:16pt;line-height:2';
-  w.innerHTML = html;
-  return html2pdf().set({ margin: 18, filename: name + '.pdf', pagebreak: { mode: ['css', 'legacy'] }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4' } }).from(w).save();
+/* PDF الكتب: تُرسم الصفحات بنفسها على canvas (النص العربي بالاتجاه الصحيح، وأسطر لا تُقطع بين الصفحات، وكل صورة بصفحة مستقلة) */
+async function pdfBook(o) {
+  const W = 1400, H = 1980, MX = 150, MT = 170, MB = 190, FS = 38, LH = 72, IND = 60, maxW = W - 2 * MX, FAM = 'Amiri, "Traditional Arabic", serif', out = await PDFLib.PDFDocument.create();
+  try { await document.fonts.load('38px Amiri', 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي'); await document.fonts.load('700 38px Amiri', 'ابتثجح'); await document.fonts.load('26px Cairo', '123'); } catch (e) {}
+  let c = null, g = null, y = 0, pn = 0, np = 0, numbered = true, blankRun = false;
+  const loadImg = d => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('تعذر قراءة صورة')); i.src = d; });
+  const flush = async () => {
+    if (!c) return;
+    if (numbered) { g.font = '26px Cairo, sans-serif'; g.fillStyle = '#777'; g.direction = 'ltr'; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.fillText(String(++pn), W / 2, H - 95); }
+    const bl = await new Promise(r => c.toBlob(r, 'image/jpeg', .85)), pg = out.addPage([595.28, 841.89]);
+    pg.drawImage(await out.embedJpg(await bl.arrayBuffer()), { x: 0, y: 0, width: 595.28, height: 841.89 }); c.width = c.height = 0; c = g = null;
+    if (++np % 4 === 0) { toast('جارٍ تجهيز الملف... ' + np + ' صفحة'); await new Promise(r => setTimeout(r)); }
+  };
+  const newPage = async num => { await flush(); numbered = num; c = document.createElement('canvas'); c.width = W; c.height = H; g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); y = MT + FS; blankRun = false; };
+  const setT = (rtl, font, col) => { g.font = font || (FS + 'px ' + FAM); g.fillStyle = col || '#111'; g.direction = rtl ? 'rtl' : 'ltr'; g.textAlign = rtl ? 'right' : 'left'; g.textBaseline = 'alphabetic'; };
+  const wrap = (words, w0, w1) => {
+    const lines = [], sp = g.measureText(' ').width; let cur = [], cw = 0, lim = w0;
+    for (const w of words) { const ww = g.measureText(w).width; if (cur.length && cw + sp + ww > lim) { lines.push(cur); cur = [w]; cw = ww; lim = w1; } else { cw += (cur.length ? sp : 0) + ww; cur.push(w); } }
+    if (cur.length) lines.push(cur); return lines;
+  };
+  const centered = async (text, font, lh, col) => {
+    setT(false, font, col); g.textAlign = 'center'; if (isAr(text)) g.direction = 'rtl';
+    for (const l of wrap(text.split(/\s+/).filter(Boolean), maxW, maxW)) { if (!c || y > H - MB) { await newPage(numbered); setT(false, font, col); g.textAlign = 'center'; if (isAr(text)) g.direction = 'rtl'; } g.fillText(l.join(' '), W / 2, y); y += lh; }
+  };
+  const para = async txt => {
+    const rtl = isAr(txt), words = txt.trim().split(/\s+/).filter(Boolean); if (!words.length) return;
+    if (!c) await newPage(true); setT(rtl); const lines = wrap(words, maxW - IND, maxW);
+    for (let i = 0; i < lines.length; i++) {
+      if (y > H - MB) await newPage(true); setT(rtl);
+      const ws = lines[i], ind = i ? 0 : IND, sp = g.measureText(' ').width, wd = ws.map(w => g.measureText(w).width), tot = wd.reduce((a, b) => a + b, 0);
+      let gap = sp; const last = i === lines.length - 1;
+      if (!last && ws.length > 1 && !/[A-Za-z]/.test(ws.join(' '))) { const gg = (maxW - ind - tot) / (ws.length - 1); if (gg >= sp * .6 && gg <= sp * 3.5) gap = gg; }
+      if (gap === sp && (last || /[A-Za-z]/.test(ws.join(' ')))) g.fillText(ws.join(' '), rtl ? W - MX - ind : MX + ind, y);
+      else { let x = rtl ? W - MX - ind : MX + ind; ws.forEach((w, k) => { g.fillText(w, x, y); x += (rtl ? -1 : 1) * (wd[k] + gap); }); }
+      y += LH;
+    }
+    blankRun = false;
+  };
+  try {
+    if (o.cover) {
+      await newPage(false); y = 560; await centered(o.cover.title || '', '700 92px ' + FAM, 128, '#111'); y += 50;
+      if (o.cover.author) await centered('بقلم: ' + o.cover.author, '48px ' + FAM, 80, '#333');
+      if (o.cover.genre) { y += 20; await centered(o.cover.genre, '40px ' + FAM, 70, '#777'); }
+      await flush();
+    }
+    for (const ch of o.chs) {
+      await flush();
+      if (ch.title) { await newPage(true); y = MT + 90; await centered(ch.title, '700 56px ' + FAM, 92, '#111'); y += 30; setT(false, '40px ' + FAM, '#999'); g.textAlign = 'center'; g.fillText('❦', W / 2, y); y += 100; }
+      for (const raw of (ch.content || '').split('\n')) {
+        const l = raw.trim();
+        if (!l) { if (c && !blankRun) { y += LH * .45; blankRun = true; } continue; }
+        const id = imgTok(l);
+        if (id) {
+          const m = (ch.imgs || {})[id]; if (!m) continue; await flush(); await newPage(true);
+          const im = await loadImg(m.d), k = Math.min((W - 200) / m.w, (H - 300) / m.h, 1.5), w = m.w * k, h = m.h * k; g.drawImage(im, (W - w) / 2, (H - h) / 2, w, h); await flush(); continue;
+        }
+        if (/^(❦\s*){3}$/.test(l)) { if (!c) await newPage(true); if (y > H - MB - LH * 2) await newPage(true); y += LH * .5; setT(false, FS + 'px ' + FAM, '#555'); g.textAlign = 'center'; g.fillText('❦  ❦  ❦', W / 2, y); y += LH * 1.2; blankRun = false; continue; }
+        await para(l);
+      }
+    }
+    await flush(); if (!out.getPageCount()) throw new Error('لا يوجد نص للتصدير');
+    dl(new Blob([await out.save()], { type: 'application/pdf' }), (o.name || 'document') + '.pdf');
+  } finally { if (c) { c.width = c.height = 0; } }
 }
-function exportNovel() {
+async function exportNovel() {
   saveCh(); toast('جارٍ تجهيز الملف...');
   const title = $('nTitle').value || 'رواية';
-  const cover = `<div style="text-align:center;padding-top:200px;page-break-after:always"><h1 style="font-size:32pt">${esc(title)}</h1><h3>${esc($('nAuthor').value)}</h3><p>${esc($('nGenre').value)}</p></div>`;
-  const body = chapters.map((c, i) => `<h2 style="${i ? 'page-break-before:always;' : ''}text-align:center">${esc(c.title)}</h2><div style="white-space:pre-wrap;text-align:justify">${esc(c.content)}</div>`).join('');
-  pdfFromHtml(cover + body, title);
+  try { await pdfBook({ cover: { title, author: $('nAuthor').value, genre: $('nGenre').value }, chs: chapters, name: title }); toast('تم تصدير الرواية PDF'); }
+  catch (e) { toast('تعذر التصدير: ' + errMsg(e), 'err'); }
 }
-function exportEditor() {
+async function exportEditor() {
   const t = $('edt').value.trim(); if (!t) return toast('اكتب نصًا أولًا', 'err');
-  pdfFromHtml(`<div style="white-space:pre-wrap">${esc(t)}</div>`, 'document');
+  toast('جارٍ تجهيز الملف...');
+  try { await pdfBook({ cover: null, chs: [{ title: '', content: t }], name: 'document' }); toast('تم تصدير PDF'); } catch (e) { toast('تعذر التصدير: ' + errMsg(e), 'err'); }
 }
 
 /* ---------- التخزين على الجهاز (IndexedDB) ---------- */
@@ -1115,6 +1233,59 @@ const dbDel = id => dbOp('readwrite', s => s.delete(id)).catch(() => null);
 let savedR = [], savedT = [];
 const fmtMB = n => (n / 1048576).toFixed(1) + ' م.ب';
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+/* ---------- عجلة أدوات الكتابة العائمة: تبقى ظاهرة أثناء الكتابة الطويلة، اسحب زرها المركزي لتحريكها، واسحب أي أداة لتدويرها ---------- */
+const WS = (() => { try { return Object.assign({ x: null, y: null, open: false, hide: false, ang: 0 }, JSON.parse(localStorage.getItem('bayan_wheel2') || '{}')); } catch (e) { return { x: null, y: null, open: false, hide: false, ang: 0 }; } })();
+const wSave = () => lsSet('bayan_wheel2', JSON.stringify(WS));
+const wR = () => Math.min(112, Math.max(72, innerWidth / 2 - 44));
+function wheelLay() {
+  const w = $('wheel'); if (!w) return;
+  const it = [...w.querySelectorAll('.wi')], n = it.length, R = wR();
+  w.style.setProperty('--rr', (R + 34) + 'px');
+  it.forEach((b, i) => { const a = WS.ang + i * 2 * Math.PI / n - Math.PI / 2; b.style.setProperty('--x', (Math.cos(a) * R).toFixed(1) + 'px'); b.style.setProperty('--y', (Math.sin(a) * R).toFixed(1) + 'px'); b.style.setProperty('--d', (i * 0.035).toFixed(3) + 's'); });
+}
+function wheelPlace() {
+  const w = $('wheel'); if (!w) return; const m = WS.open ? wR() + 34 : 36, H = innerHeight, Wd = innerWidth;
+  if (WS.x == null) { WS.x = Wd - 46; WS.y = H - 170; }
+  WS.x = Math.min(Math.max(WS.x, Math.min(m, Wd / 2)), Math.max(Wd - m, Wd / 2)); WS.y = Math.min(Math.max(WS.y, Math.min(m, H / 2)), Math.max(H - m, H / 2));
+  w.style.left = (WS.x - 30) + 'px'; w.style.top = (WS.y - 30) + 'px';
+}
+function wheelSync() {
+  const w = $('wheel'), st = $('studio'); if (!w || !st) return;
+  const vis = !st.classList.contains('hidden') && !WS.hide; w.classList.toggle('off', !vis);
+  w.classList.toggle('open', WS.open); $('wheelC').setAttribute('aria-expanded', WS.open ? 'true' : 'false'); wheelLay(); wheelPlace();
+}
+function wheelToggle(force) { WS.open = force != null ? !!force : !WS.open; wheelSync(); wSave(); }
+function wheelRot(d) { $('wheel').classList.remove('rot'); WS.ang += d * 2 * Math.PI / 9; wheelLay(); wSave(); }
+function wheelShow() { WS.hide = !WS.hide; if (!WS.hide) { WS.open = true; } wheelSync(); wSave(); toast(WS.hide ? 'أُخفيت العجلة العائمة' : 'ظهرت العجلة العائمة، اسحب زرها لتحريكها'); }
+function wheelReset() { WS.x = WS.y = null; WS.hide = false; WS.open = true; WS.ang = 0; wheelSync(); wSave(); }
+(function wheelInit() {
+  const w = $('wheel'), st = $('studio'); if (!w || !st) return;
+  document.body.appendChild(w);
+  const cen = () => { const r = $('wheelC').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+  const ang = e => { const [cx, cy] = cen(); return Math.atan2(e.clientY - cy, e.clientX - cx); };
+  let d = null, moved = false;
+  w.addEventListener('mousedown', e => e.preventDefault()); /* لا يسحب التركيز من مربع الكتابة */
+  w.addEventListener('pointerdown', e => {
+    const c = e.target.closest('.wc'), i = e.target.closest('.wi'); if (!c && !(i && WS.open)) return;
+    d = { mode: c ? 'move' : 'rot', sx: e.clientX, sy: e.clientY, x0: WS.x, y0: WS.y, a0: ang(e), ang0: WS.ang, id: e.pointerId }; moved = false;
+  });
+  w.addEventListener('pointermove', e => {
+    if (!d || e.pointerId !== d.id) return;
+    if (!moved) { if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 9) return; moved = true; try { w.setPointerCapture(e.pointerId); } catch (x) {} w.classList.add(d.mode === 'move' ? 'drag' : 'rot'); }
+    if (d.mode === 'move') { WS.x = d.x0 + e.clientX - d.sx; WS.y = d.y0 + e.clientY - d.sy; wheelPlace(); }
+    else { let dl = ang(e) - d.a0; if (dl > Math.PI) dl -= 2 * Math.PI; if (dl < -Math.PI) dl += 2 * Math.PI; WS.ang = d.ang0 + dl; wheelLay(); }
+  });
+  const end = () => {
+    if (!d) return; const m = d.mode; d = null; w.classList.remove('drag');
+    if (moved) { if (m === 'rot') { const sn = 2 * Math.PI / 9; WS.ang = Math.round(WS.ang / sn) * sn; w.classList.remove('rot'); wheelLay(); } wSave(); setTimeout(() => { moved = false; }, 60); } else w.classList.remove('rot');
+  };
+  w.addEventListener('pointerup', end); w.addEventListener('pointercancel', end);
+  w.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+  addEventListener('resize', wheelSync);
+  new MutationObserver(wheelSync).observe(st, { attributes: true, attributeFilter: ['class'] });
+  wheelSync();
+})();
 async function rdListRender() {
   savedR = (await dbAll()).filter(x => x.kind === 'r').sort((a, b) => b.t - a.t);
   const b = $('rdList'); b.classList.toggle('hidden', !savedR.length);
@@ -1134,7 +1305,7 @@ async function trListRender() {
   b.innerHTML = '<b class="text-xs text-slate-300"><i class="fa-solid fa-clock-rotate-left text-orange-500"></i> ترجماتي المحفوظة</b>' + savedT.map((x, i) => `<div class="flex flex-wrap items-center gap-2 text-xs border-t border-slate-800 pt-2"><span class="truncate flex-1">${esc(x.name)}</span><span class="text-slate-500">${x.out.filter(v => v != null).length}/${x.n}</span><button class="btn !py-1" onclick="trOpenSaved(${i})">فتح</button><button class="btn !py-1" onclick="trDlSaved(${i})">PDF</button><button class="btn !py-1" onclick="trToReader(${i})">قراءة</button><button class="btn !py-1 text-rose-400" onclick="trDel(${i})"><i class="fa-solid fa-trash-can"></i></button></div>`).join('');
 }
 function trOpenSaved(i) {
-  const x = savedT[i]; trDoc = null; trEpub = null; trBlob = null; trId = x.id; trName = x.name; trN = x.n; trOut = x.out.slice(); trPdf = x.pdf || null; trView = 0;
+  const x = savedT[i]; trDoc = null; trEpub = null; trBlob = null; trId = x.id; trName = x.name; trN = x.n; trOut = x.out.slice(); trImg = x.imgs || []; trPdf = x.pdf || null; trView = 0;
   $('pdir').value = x.pair || 'en|ar'; $('pfrom').value = 1; $('pto').value = trN;
   const d = trOut.filter(v => v != null).length; $('pbar').style.width = (d / trN * 100) + '%';
   $('pinfo').textContent = `${x.name}: ${trN} صفحة، المترجم ${d}` + (d < trN ? ' (لإكمال الترجمة أعد اختيار الملف الأصلي)' : ''); trShow(); tab('trans');
@@ -1146,7 +1317,7 @@ async function trToReader(i) {
 }
 async function trDel(i) {
   const x = savedT[i]; if (!confirm('حذف «' + x.name + '» من المحفوظات؟')) return;
-  await dbDel(x.id); trListRender();
+  await dbDel(x.id); dbDel('b:' + x.id); Object.keys(trBlk).forEach(k => { if (k.startsWith(x.id + '|')) delete trBlk[k]; }); trListRender();
 }
 
 /* ---------- قارئ PDF ---------- */
@@ -1538,7 +1709,7 @@ function spFixAll() {
 }
 
 /* ---------- الترجمة ---------- */
-const A = '(?<![\u0600-\u06FF])', Z = '(?![\u0600-\u06FF])';
+const A = '(?<![\u0621-\u064A\u0671-\u06D3])', Z = '(?![\u0621-\u064A\u0671-\u06D3])';
 const PRE = '(?:[وف])?(?:بال|كال|لل|ال|[بكل])?', PRE_AL = '(?:[وف])?(?:بال|كال|لل|ال)';
 const R_H = new RegExp(A + '(' + PRE + ')(إله|آلهة)' + Z, 'g'), R_A = new RegExp(A + '(' + PRE_AL + ')(اله|الهة)' + Z, 'g'), R_0 = new RegExp(A + '(اله|الهة)' + Z, 'g');
 const TERM_MAP = { 'إله': 'حاكم', 'اله': 'حاكم', 'آلهة': 'حكام', 'الهة': 'حكام' };
@@ -1553,9 +1724,9 @@ function splitChunks(src, max) {
   return parts;
 }
 /* ---------- ترجمة الملف نفسه (رؤية بالذكاء الاصطناعي) ---------- */
-let trDoc = null, trEpub = null, trId = '', trName = 'translated', trOut = [], trN = 0, trStop = false, trView = 0, trPdf = null, trT;
-const TR_P = pair => 'هذه صورة صفحة من كتاب. اقرأ كل النص الظاهر فيها وترجمه ' + (pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية') + ' ترجمة أدبية دقيقة وسلسة مع الحفاظ على الفقرات والحوار. تجاهل أرقام الصفحات والرؤوس المتكررة. لا تضف شرحًا ولا مقدمة ولا ملاحظات. إن لم يوجد نص في الصفحة فأعد كلمة EMPTY فقط.' + (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '');
-const TR_T = pair => 'هذا نص من كتاب. ترجمه ' + (pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية') + ' ترجمة أدبية دقيقة وسلسة مع الحفاظ على الفقرات والحوار. لا تضف شرحًا ولا مقدمة ولا ملاحظات، وأعد الترجمة فقط.' + (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '');
+let trMeta = [], trDoc = null, trEpub = null, trId = '', trName = 'translated', trOut = [], trImg = [], trN = 0, trStop = false, trView = 0, trPdf = null, trT;
+const TR_P = pair => 'هذه صورة صفحة من كتاب. اقرأ كل النص الظاهر فيها وترجمه ' + (pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية') + ' ترجمة أدبية دقيقة وسلسة مع الحفاظ على الفقرات والحوار. تجاهل أرقام الصفحات والرؤوس المتكررة. لا تضف شرحًا ولا مقدمة ولا ملاحظات. إن لم يوجد نص في الصفحة فأعد كلمة EMPTY فقط.' + (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '') + glHint(pair);
+const TR_T = pair => 'هذا نص من كتاب. ترجمه ' + (pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية') + ' ترجمة أدبية دقيقة وسلسة مع الحفاظ على الفقرات والحوار. لا تضف شرحًا ولا مقدمة ولا ملاحظات، وأعد الترجمة فقط.' + (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '') + glHint(pair);
 const isEpub = (blob, name) => /\.epub$/i.test(name || '') || blob.type === 'application/epub+zip';
 function epubText(html) {
   const d = new DOMParser().parseFromString(html, 'text/html'), BL = /^(P|DIV|H[1-6]|LI|TR|BLOCKQUOTE|SECTION|ARTICLE|PRE|TABLE|UL|OL|DL|DT|DD|FIGURE|FIGCAPTION|HR|BR)$/; let o = '';
@@ -1598,11 +1769,11 @@ async function trLoad(blob, name) {
   if (isEpub(blob, name)) { trEpub = await epubPages(blob); trBlob = blob; trDoc = null; trN = trEpub.length; trName = name.replace(/\.epub$/i, ''); }
   else { trDoc = await pdfjsLib.getDocument({ data: await blob.arrayBuffer() }).promise; trEpub = null; trBlob = null; trN = trDoc.numPages; trName = name.replace(/\.pdf$/i, ''); }
   trId = 'x:' + name + '_' + blob.size; trView = 0; trStop = false;
-  const old = await dbGet(trId); trOut = old && old.out ? old.out.slice() : []; trPdf = old && old.pdf || null;
+  const old = await dbGet(trId); const nb = await trBlkLoad(); trOut = old && old.out ? old.out.slice() : []; trImg = old && old.imgs || []; trPdf = old && old.pdf || null;
   if (old && old.pair) $('pdir').value = old.pair;
   $('pfrom').value = 1; $('pto').value = trN;
   const d = trOut.filter(v => v != null).length; $('pbar').style.width = (d / trN * 100) + '%'; $('pstat').textContent = '';
-  $('pinfo').textContent = `${name}: ${trN} صفحة` + (d ? ` · المترجم سابقًا ${d} (ستكمل منها)` : ''); trShow();
+  $('pinfo').textContent = `${name}: ${trN} صفحة` + (d ? ` · المترجم سابقًا ${d} (ستكمل منها)` : '') + (nb ? ` · محفوظ لنسخة «بنفس التصميم»: ${nb} ${trEpub ? 'ملف' : 'صفحة'} (يكمل من حيث توقف)` : ''); trShow();
 }
 async function trPick(e) { const f = e.target.files[0]; if (!f) return; try { await trLoad(f, f.name); } catch (x) { $('pinfo').textContent = 'تعذرت قراءة الملف: ' + errMsg(x); } e.target.value = ''; }
 async function trFromReader() { if (!rdBlob) return toast('افتح ملفًا في القارئ أولًا', 'err'); try { await trLoad(rdBlob, rdName || 'book.pdf'); tab('trans'); } catch (x) { toast('تعذر فتح الملف', 'err'); } }
@@ -1689,23 +1860,110 @@ async function textPart0(p, pair, eng) {
   return (await t((pair === 'en|ar' ? '>>ara<< ' : '') + q, { max_new_tokens: 400 }))[0].translation_text + tail;
 }
 async function textPart(p, pair, eng) {
-  if (!(pair === 'en|ar' && $('rep').checked)) return textPart0(p, pair, eng);
-  const pr = godProtect(p); return godRestore(await textPart0(pr.text, pair, eng), pr.map);
+  const en = pair === 'en|ar', rules = (en ? glRules().filter(r => r[2]).map(r => [r[0], r[1]]) : []).concat(en && $('rep').checked ? GOD_RULES : []);
+  if (!rules.length) return textPart0(p, pair, eng);
+  const map = []; rules.forEach(([re, ar]) => { p = p.replace(re, () => { map.push(ar); return 'XQZ' + (map.length - 1) + 'X'; }); });
+  return godRestore(await textPart0(p, pair, eng), map);
 }
 async function trPage(i, pair) {
-  const eng = $('peng').value; if (eng === 'ai') return aiPage(i, pair);
-  const txt = trEpub ? trEpub[i] : pageText(await (await trDoc.getPage(i + 1)).getTextContent());
+  const eng = $('peng').value; if (eng === 'ai') { let t = await aiPage(i, pair); if (t != null && !trEpub) { try { await trSrc(i); t = trMarkProp(t, i); } catch (e) {} } return t; }
+  const txt = await trSrc(i);
   if (!txt) { trSkipped++; return ''; }
-  let out = '';
-  for (const p of splitChunks(txt, pair.startsWith('ar') ? 350 : 500)) { if (trStop) return null; out += await textPart(p, pair, eng); }
+  const mx = pair.startsWith('ar') ? 350 : 500; let out = '', buf = [];
+  const flushBuf = async () => { const t = buf.join('\n'); buf = []; for (const p of splitChunks(t, mx)) { if (trStop) return false; out += await textPart(p, pair, eng); } return true; };
+  const lines = pair === 'en|ar' ? txt.split('\n').flatMap(ln => { const sp = ln.match(/^(\s*(?:chapter|prologue|epilogue)\s+(?:\d+|[a-z-]+)\s*[:.\-–—]\s*.{1,80}?[?!])\s+(\S.*)$/i); return sp ? [sp[1], sp[2]] : [ln]; }) : txt.split('\n');
+  for (const ln of lines) {
+    if (ln.trim() === '[[IMG]]') { if (buf.length && !(await flushBuf())) return null; out += (out && !out.endsWith('\n') ? '\n' : '') + '[[صورة]]\n'; continue; }
+    const h = pair === 'en|ar' ? trHeadParse(ln) : null;
+    if (!h) { buf.push(ln); continue; }
+    if (buf.length && !(await flushBuf())) return null;
+    if (trStop) return null;
+    const ttl = h.title ? (await textPart(h.title, pair, eng)).trim() : '';
+    out += (out && !out.endsWith('\n') ? '\n' : '') + TR_KW[h.kw] + (h.num ? ' ' + h.num : '') + (ttl ? ': ' + ttl : '') + '\n';
+  }
+  if (buf.length && !(await flushBuf())) return null;
   return out;
+}
+/* عناوين الفصول تُترجم بسطر مستقل: كلمة الفصل بقاعدة ثابتة + العنوان بطلب منفصل حتى لا يبقى بالإنجليزية */
+const TR_KW = { chapter: 'الفصل', prologue: 'المقدمة', epilogue: 'الخاتمة', part: 'الجزء', interlude: 'فاصل', volume: 'المجلد', book: 'الكتاب' };
+const TR_NUMW = Object.fromEntries('one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty'.split(' ').map((w, i) => [w, i + 1]));
+function trHeadParse(ln) {
+  const t = ln.trim(); if (!t || t.split(/\s+/).length > 14 || /\.$/.test(t)) return null;
+  const m = t.match(/^(chapter|prologue|epilogue|part|interlude|volume|book)\b[\s.:\-–—|]*([0-9]+|[a-z]+)?[\s.:\-–—|]*(.*)$/i); if (!m) return null;
+  const kw = m[1].toLowerCase(), tok = m[2] || ''; let num = null, title = m[3] || '';
+  if (/^\d+$/.test(tok)) num = tok; else if (TR_NUMW[tok.toLowerCase()]) num = String(TR_NUMW[tok.toLowerCase()]); else title = (tok + ' ' + title).trim();
+  if (!num && !/^(chapter|prologue|epilogue)$/.test(kw)) return null;
+  return { kw, num, title: title.trim() };
+}
+/* مكان الصور: علامة [[IMG]] تُترجم إلى [[صورة]] (صفحة صورة فقط تبقى فارغة بكلمة «صورة») */
+async function pgImages(pg) {
+  const O = pdfjsLib.OPS, ol = await pg.getOperatorList(), v = pg.view, PA = (v[2] - v[0]) * (v[3] - v[1]), res = [], st = []; let m = [1, 0, 0, 1, 0, 0];
+  const mul = (a, b) => [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3], a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
+  ol.fnArray.forEach((fn, k) => {
+    const a = ol.argsArray[k];
+    if (fn === O.save) st.push(m); else if (fn === O.restore) m = st.pop() || m; else if (fn === O.transform) m = mul(m, a);
+    else if (fn === O.paintFormXObjectBegin) { st.push(m); if (a && a[0]) m = mul(m, a[0]); } else if (fn === O.paintFormXObjectEnd) m = st.pop() || m;
+    else if (fn === O.paintImageXObject || fn === O.paintInlineImageXObject || fn === O.paintImageMaskXObject || fn === O.paintJpegXObject) {
+      const area = Math.hypot(m[0], m[1]) * Math.hypot(m[2], m[3]) / PA;
+      if (area >= .02) { const xs = [m[4], m[4] + m[0], m[4] + m[2], m[4] + m[0] + m[2]], ys = [m[5], m[5] + m[1], m[5] + m[3], m[5] + m[1] + m[3]]; res.push({ top: Math.max(...ys), x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys), area }); }
+    }
+  });
+  res.sort((x, y) => y.top - x.top); return res.filter((x, k) => !k || Math.abs(x.top - res[k - 1].top) > 3);
+}
+async function pgCrops(pg, imgs) {
+  const vp = pg.getViewport({ scale: 2 }), cv = document.createElement('canvas'); cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+  await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+  const res = [];
+  for (const im of imgs) {
+    try {
+      const a = vp.convertToViewportPoint(im.x0, im.y1), b = vp.convertToViewportPoint(im.x1, im.y0);
+      const x = Math.max(0, Math.floor(Math.min(a[0], b[0]))), y = Math.max(0, Math.floor(Math.min(a[1], b[1]))), w = Math.min(cv.width - x, Math.ceil(Math.abs(b[0] - a[0]))), h = Math.min(cv.height - y, Math.ceil(Math.abs(b[1] - a[1])));
+      if (w < 40 || h < 40) { res.push(null); continue; }
+      const c2 = document.createElement('canvas'); c2.width = w; c2.height = h; const g2 = c2.getContext('2d'); g2.fillStyle = '#fff'; g2.fillRect(0, 0, w, h); g2.drawImage(cv, x, y, w, h, 0, 0, w, h);
+      res.push(c2.toDataURL('image/jpeg', .8)); c2.width = c2.height = 0;
+    } catch (e) { res.push(null); }
+  }
+  cv.width = cv.height = 0; return res;
+}
+async function trSrc(i) {
+  if (trEpub) return trEpub[i];
+  trImg[i] = [];
+  const pg = await trDoc.getPage(i + 1), tc = await pg.getTextContent(), plain = pageText(tc), len = plain.replace(/\s/g, '').length;
+  let imgs = []; try { imgs = await pgImages(pg); } catch (e) {}
+  imgs = imgs.filter(x => x.area < .85 || len < 25); trMeta[i] = { fr: imgs.map(x => (pg.view[3] - x.top) / (pg.view[3] - pg.view[1])), len };
+  if (!imgs.length) return plain;
+  if ($('imgReal').checked) { try { trImg[i] = await pgCrops(pg, imgs); } catch (e) { trImg[i] = []; } }
+  if (len < 25) return imgs.map(() => '[[IMG]]').join('\n');
+  const its = []; let k = 0;
+  for (const it of tc.items) { while (k < imgs.length && it.transform && it.transform[5] <= imgs[k].top) { its.push({ str: '\n[[IMG]]\n', hasEOL: true }); k++; } its.push(it); }
+  while (k < imgs.length) { its.push({ str: '\n[[IMG]]\n', hasEOL: true }); k++; }
+  return pageText({ items: its });
+}
+function trMarkProp(t, i) {
+  const m = trMeta[i]; if (!m || !m.fr.length) return t;
+  if (m.len < 25) return m.fr.map(() => '[[صورة]]').join('\n');
+  const ls = (t || '').split('\n'); let add = 0;
+  for (const f of m.fr.slice().sort((a, b) => a - b)) { ls.splice(Math.min(ls.length, Math.round(f * (ls.length - add)) + add), 0, '[[صورة]]'); add++; }
+  return ls.join('\n');
+}
+async function trAddImgs() {
+  if (!trN) return toast('لا توجد ترجمة بعد', 'err');
+  if (!trDoc || trEpub) return toast('أعد اختيار ملف PDF الأصلي أولًا (الخطوة 1) ليكشف الصور', 'err');
+  let n = 0;
+  for (let i = 0; i < trN; i++) {
+    if (trOut[i] == null || /\[\[صورة\]\]/.test(trOut[i])) continue;
+    $('pstat').textContent = 'كشف الصور: صفحة ' + (i + 1) + ' / ' + trN;
+    try { await trSrc(i); } catch (e) { continue; }
+    const t2 = trMarkProp(trOut[i], i); if (t2 !== trOut[i]) { trOut[i] = t2; n++; }
+  }
+  $('pstat').textContent = ''; trPdf = null; trShow(); trSaveSoon(); toast(n ? 'أُضيفت علامات الصور في ' + n + ' صفحة' : 'لم أجد صورًا في الصفحات', n ? undefined : 'err');
 }
 async function trGo() {
   if (!trDoc && !trEpub) return toast('اختر ملف PDF أو EPUB أولًا (أو أعد اختيار الملف الأصلي لإكمال الترجمة)', 'err');
   const pair = $('pdir').value, a = Math.max(1, +$('pfrom').value || 1), b = Math.min(trN, +$('pto').value || trN), todo = [];
   for (let i = a - 1; i < b; i++) if (trOut[i] == null) todo.push(i);
   if (!todo.length) return toast('كل صفحات هذا النطاق مترجمة');
-  trStop = false; $('pgo').disabled = true; const t0 = Date.now();
+  trStop = false; $('pgo').disabled = true; const t0 = Date.now(); let doneAll = false;
   try {
     if ($('peng').value === 'ai') await ensureAI();
     trSkipped = 0; gtDead = false;
@@ -1713,13 +1971,13 @@ async function trGo() {
       const i = todo[k], eta = k ? Math.max(1, Math.round((Date.now() - t0) / k * (todo.length - k) / 60000)) : 0;
       $('pstat').textContent = `صفحة ${i + 1} (${k + 1} من ${todo.length})` + (eta ? ` · المتبقي ≈ ${eta} د` : '');
       let t = await trPage(i, pair); if (t == null) break;
-      if (pair === 'en|ar' && $('rep').checked) t = replaceTerms(t);
+      t = trFin(t, pair);
       trOut[i] = t; trPdf = null; trView = i; $('pbar').style.width = ((k + 1) / todo.length * 100) + '%'; trShow(); trSaveSoon();
     }
-    $('pstat').textContent = trStop ? 'تم الإيقاف، اضغط «بدء» للمتابعة' : 'اكتملت الترجمة ✓ اضغط «تنزيل PDF المترجم»' + (trSkipped ? ` · ${trSkipped} صفحة بلا نص قابل للاستخراج (ممسوحة) تخطيتُها، استخدم الطريقة 4 لها` : '');
+    doneAll = !trStop; $('pstat').textContent = trStop ? 'تم الإيقاف، اضغط «بدء» للمتابعة' : 'اكتملت الترجمة ✓ اضغط «تنزيل PDF المترجم»' + (trSkipped ? ` · ${trSkipped} صفحة بلا نص قابل للاستخراج (ممسوحة) تخطيتُها، استخدم الطريقة 4 لها` : '');
   } catch (x) { $('pstat').textContent = 'توقفت: ' + errMsg(x) + ' (اضغط «بدء» للمتابعة)'; }
   trSave(); $('pgo').disabled = false;
-}
+  }
 function trShow() {
   $('vnum').textContent = trN ? `صفحة ${trView + 1} / ${trN}` : '0 / 0';
   $('vtr').dir = $('pdir').value.endsWith('ar') ? 'rtl' : 'ltr'; $('vtr').value = trOut[trView] != null ? trOut[trView] : '';
@@ -1727,39 +1985,73 @@ function trShow() {
 function vNav(d) { if (!trN) return; trView = Math.min(trN - 1, Math.max(0, trView + d)); trShow(); }
 $('vtr').addEventListener('input', e => { if (trN) { trOut[trView] = e.target.value; trPdf = null; trSaveSoon(); } });
 const trSaveSoon = () => { clearTimeout(trT); trT = setTimeout(trSave, 2000); };
-function trSave() { if (!trId) return; return dbPut({ id: trId, kind: 'x', name: trName, n: trN, out: Array.from(trOut, v => v == null ? null : v), pair: $('pdir').value, pdf: trPdf, t: Date.now() }).then(trListRender); }
+function trSave() { if (!trId) return; return dbPut({ id: trId, kind: 'x', name: trName, n: trN, out: Array.from(trOut, v => v == null ? null : v), imgs: trImg, pair: $('pdir').value, pdf: trPdf, t: Date.now() }).then(trListRender); }
 async function trBuildPdf() {
-  const items = trOut.map((t, i) => [t, i]).filter(([t]) => t);
-  if (!items.length) { toast('لا توجد ترجمة بعد', 'err'); return null; }
+  if (!trOut.some(v => v)) { toast('لا توجد ترجمة بعد', 'err'); return null; }
   toast('جارٍ بناء الملف المترجم...');
-  const rtl = $('pdir').value.endsWith('ar'), W = 1240, H = 1754, M = 110, LH = 62, F = '34px Amiri, serif', out = await PDFLib.PDFDocument.create();
-  try { await document.fonts.load(F, 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي'); await document.fonts.load('22px Cairo', 'ابت'); } catch (e) {}
-  let c, g, y, label;
-  const flush = async () => { const bl = await new Promise(r => c.toBlob(r, 'image/jpeg', .82)); out.addPage([595.28, 841.89]).drawImage(await out.embedJpg(await bl.arrayBuffer()), { x: 0, y: 0, width: 595.28, height: 841.89 }); c.width = c.height = 0; };
-  const newPage = async () => {
-    if (c) await flush();
-    c = document.createElement('canvas'); c.width = W; c.height = H; g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#888'; g.font = '22px Cairo, sans-serif'; g.direction = 'rtl'; g.textAlign = 'center'; g.fillText(label, W / 2, 60);
-    g.fillStyle = '#000'; g.font = F; g.direction = rtl ? 'rtl' : 'ltr'; g.textAlign = rtl ? 'right' : 'left'; y = M + 20;
-  };
-  const put = async s => { if (y + LH > H - M) await newPage(); g.fillText(s, rtl ? W - M : M, y); y += LH; };
+  const rtl = $('pdir').value.endsWith('ar'), W = 1240, H = 1754, M = 100, out = await PDFLib.PDFDocument.create();
+  try { await document.fonts.load('32px Amiri, serif', 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي'); } catch (e) {}
+  const END = /[.!?؟…:]["”»)]?$|["”»]$/, HEAD = /^(الفصل|الجزء|المقدمة|الخاتمة|المشهد|chapter|prologue|epilogue)(\s|$)/i;
   try {
-    for (const [t, i] of items) {
-      label = 'صفحة ' + (i + 1) + ' / ' + trN; await newPage();
-      for (const para of t.split('\n')) {
-        if (!para.trim()) { y += LH * .5; continue; }
-        let line = '';
-        for (const w of para.trim().split(/\s+/)) { const tt = line ? line + ' ' + w : w; if (g.measureText(tt).width > W - 2 * M && line) { await put(line); line = w; } else line = tt; }
-        if (line) await put(line); y += LH * .35;
+    /* كل صفحة ترجمة = صفحة واحدة في الملف، ويُصغَّر الخط تلقائيًا حتى تتسع كاملة بلا صفحة ثانية */
+    const addImgPages = async q => { for (const d of q) {
+      if (!d) { const wc = document.createElement('canvas'); wc.width = W; wc.height = H; const wg = wc.getContext('2d'); wg.fillStyle = '#fff'; wg.fillRect(0, 0, W, H); wg.fillStyle = '#2563eb'; wg.font = 'bold 300px Amiri, serif'; wg.textAlign = 'center'; wg.textBaseline = 'middle'; wg.direction = 'rtl'; wg.fillText('صورة', W / 2, H / 2);
+        const bl = await new Promise(r => wc.toBlob(r, 'image/jpeg', .85)); out.addPage([595.28, 841.89]).drawImage(await out.embedJpg(await bl.arrayBuffer()), { x: 0, y: 0, width: 595.28, height: 841.89 }); wc.width = wc.height = 0; continue; }
+      const im = await out.embedJpg(await (await fetch(d)).arrayBuffer()), pw = 595.28, ph = 841.89, mg = 36, k = Math.min((pw - 2 * mg) / im.width, (ph - 2 * mg) / im.height, 2), w = im.width * k, h = im.height * k; out.addPage([pw, ph]).drawImage(im, { x: (pw - w) / 2, y: (ph - h) / 2, width: w, height: h }); } };
+    for (let i = 0; i < trN; i++) {
+      const imgsI = trImg[i] || [], queue = [], real = $('imgReal').checked; let mk = 0;
+      const pageTxt = (trOut[i] || '').split('\n').filter(l => { if (l.trim() === '[[صورة]]') { queue.push(real ? imgsI[mk] || null : null); mk++; return false; } return true; }).join('\n');
+      if (queue.length && !pageTxt.trim()) { await addImgPages(queue); continue; }
+      const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#000'; g.direction = rtl ? 'rtl' : 'ltr'; g.textAlign = rtl ? 'right' : 'left';
+      const paras = []; let cur = '';
+      for (let ln of pageTxt.split('\n')) {
+        ln = ln.trim(); if (!ln) { if (cur) paras.push({ t: cur }); cur = ''; continue; }
+        if (ln === '[[صورة]]') { if (cur) paras.push({ t: cur }); cur = ''; paras.push({ t: 'صورة', h: 1, im: 1 }); continue; }
+        const ws = ln.split(/\s+/);
+        if (HEAD.test(ln) && ((ws.length <= 8 && !/[.!?؟…]$/.test(ln)) || /^[0-9٠-٩]+$/.test(ws[1] || ''))) { /* بداية فصل: «فصل» + كم كلمة بعدها = عنوان */
+          if (cur) paras.push({ t: cur }); cur = ''; const n = ws.length <= 8 ? ws.length : 6; paras.push({ t: ws.slice(0, n).join(' '), h: 1 });
+          const rest = ws.slice(n).join(' '); if (rest) { cur = rest; if (END.test(rest)) { paras.push({ t: cur }); cur = ''; } } continue;
+        }
+        cur = cur ? cur + ' ' + ln : ln; if (END.test(ln)) { paras.push({ t: cur }); cur = ''; }
       }
+      if (cur) paras.push({ t: cur });
+      if (paras.length === 1 && paras[0].im) { g.font = 'bold 300px Amiri, serif'; g.fillStyle = '#2563eb'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('صورة', W / 2, H / 2); g.textBaseline = 'alphabetic'; paras.length = 0; }
+      const build = fs => {
+        const ls = []; let h = 0;
+        for (const p of paras) {
+          const hf = p.im ? fs * 2.6 : p.h ? fs * 1.45 : fs, LH = hf * 1.65; g.font = (p.h ? 'bold ' : '') + hf + 'px Amiri, serif'; let line = '';
+          for (const w of p.t.split(/\s+/)) { const tt = line ? line + ' ' + w : w; if (g.measureText(tt).width > W - 2 * M && line) { ls.push({ s: line, h: p.h, im: p.im, hf, LH }); h += LH; line = w; } else line = tt; }
+          if (line) { ls.push({ s: line, h: p.h, im: p.im, hf, LH }); h += LH; }
+          const gap = p.h ? fs * .8 : fs * .5; ls.push({ gap }); h += gap;
+        }
+        return { ls, h };
+      };
+      let fs = 34, r = build(fs); while (r.h > H - 2 * M && fs > 10) { fs -= 1; r = build(fs); }
+      let y = M; for (const e of r.ls) {
+        if (e.gap != null) { y += e.gap; continue; }
+        g.font = (e.h ? 'bold ' : '') + e.hf + 'px Amiri, serif'; g.fillStyle = e.im ? '#2563eb' : e.h ? '#e11d48' : '#000'; g.textAlign = e.h ? 'center' : (rtl ? 'right' : 'left');
+        g.fillText(e.s, e.h ? W / 2 : (rtl ? W - M : M), y + e.LH * .75); y += e.LH;
+      }
+      const bl = await new Promise(res => c.toBlob(res, 'image/jpeg', .85));
+      out.addPage([595.28, 841.89]).drawImage(await out.embedJpg(await bl.arrayBuffer()), { x: 0, y: 0, width: 595.28, height: 841.89 }); c.width = c.height = 0;
+      await addImgPages(queue);
     }
-    await flush();
     trPdf = new Blob([await out.save()], { type: 'application/pdf' }); await trSave(); return trPdf;
   } catch (e) { toast('تعذر بناء الملف: ' + errMsg(e), 'err'); return null; }
 }
 /* ---------- قسم «تحرير وتدقيق» المستقل ---------- */
 let edtPrev = null, edtM = [];
 const edtV = () => $('edtTxt').value;
+/* إرسال الترجمة (الصفحة الحالية أو كل الصفحات المترجمة) إلى قسم «تحرير وتدقيق» */
+function trToEdit(all) {
+  if (!trN) return toast('لا توجد ترجمة بعد', 'err');
+  const parts = all ? trOut.filter(v => v != null && String(v).trim()) : [trOut[trView]].filter(v => v != null && String(v).trim());
+  if (!parts.length) return toast(all ? 'لا توجد ترجمة بعد' : 'هذه الصفحة غير مترجمة بعد', 'err');
+  if (edtV().trim() && !confirm('يوجد نص في قسم التحرير. استبداله بالترجمة؟ (تقدر تتراجع من زر «تراجع» هناك)')) return;
+  edtSet(parts.join('\n\n')); tab('edit');
+  toast('أُرسلت ' + (all ? parts.length + ' صفحة' : 'الصفحة ' + (trView + 1)) + ' إلى التحرير والتدقيق');
+}
 function edtStat() { const t = edtV().trim(); $('edtStat').textContent = (t ? t.split(/\s+/).length : 0) + ' كلمة'; }
 function edtSet(v) { edtPrev = edtV(); $('edtTxt').value = v; edtM = []; $('edtOut').innerHTML = ''; edtStat(); }
 function edtUndo() { if (edtPrev == null) return toast('لا شيء للتراجع عنه'); const c = edtV(); $('edtTxt').value = edtPrev; edtPrev = c; edtM = []; $('edtOut').innerHTML = ''; edtStat(); }
@@ -1893,9 +2185,27 @@ async function memAsk() {
   try { out.textContent = await aiAsk('أجب عن سؤال الكاتب اعتمادًا فقط على معلومات الرواية التالية، واذكر أرقام الفصول. إذا لم تجد الجواب فيها قل «لا أجد هذا في رواياتك المحلَّلة» ولا تخمّن.', memText(memBuild(store)).slice(0, 14000) + '\n\nالسؤال: ' + q); }
   catch (x) { out.textContent = 'تعذر الجواب: ' + errMsg(x); }
 }
-async function trDl() { const b = trPdf || await trBuildPdf(); if (b) { dl(b, trName + '-translated.pdf'); toast('تم حفظ الملف المترجم'); } }
+async function trDl() { const b = await trBuildPdf(); if (b) { dl(b, trName + '-translated.pdf'); toast('تم حفظ الملف المترجم'); } }
 /* ---------- تنزيل PDF بنفس تصميم الأصل: الصور والتنسيق تبقى والنص يُستبدل بالترجمة ---------- */
 let trBlk = {};
+/* حفظ ترجمة «بنفس التصميم» داخل المتصفح (IndexedDB) ليكمل من حيث توقف حتى بعد إغلاق المتصفح */
+let trBlkT = 0, trBlkTm = 0;
+function trBlkSave(force) {
+  if (!trId) return;
+  const now = Date.now();
+  if (!force && now - trBlkT < 3000) { clearTimeout(trBlkTm); trBlkTm = setTimeout(() => trBlkSave(true), 3000); return; }
+  clearTimeout(trBlkTm); trBlkT = now;
+  const p = trId + '|', snap = {}; for (const k in trBlk) if (k.startsWith(p)) snap[k] = Array.from(trBlk[k], v => v == null ? null : v);
+  if (!Object.keys(snap).length) return;
+  return dbPut({ id: 'b:' + trId, kind: 'b', blk: snap, t: Date.now() });
+}
+async function trBlkLoad() {
+  const b = await dbGet('b:' + trId); if (!b || !b.blk) return 0; let n = 0;
+  for (const k in b.blk) { if (!trBlk[k]) trBlk[k] = b.blk[k]; if (b.blk[k].length && b.blk[k].every(v => v != null)) n++; }
+  return n;
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') trBlkSave(true); });
+addEventListener('pagehide', () => trBlkSave(true));
 function layoutGroup(segs, srcRtl) {
   segs = segs.slice().sort((p, q) => p.y - q.y); const lines = [];
   for (const s of segs) { const L = lines[lines.length - 1]; if (L && Math.abs(L.y - s.y) < Math.max(L.h, s.h) * .4) L.a.push(s); else lines.push({ y: s.y, h: s.h, a: [s] }); }
@@ -1944,7 +2254,7 @@ function layoutBg(g, c, x, y, w, h) {
    ترسل كل كتل الصفحة مرقّمة في طلب واحد وتستخرج الترجمات بالأرقام، وما فشل منها يُعاد فرديًا. */
 async function layoutAiFill(blocks, tr, pair, fin) {
   const dirTxt = pair === 'en|ar' ? 'من الإنجليزية إلى العربية الفصحى' : 'من العربية إلى الإنجليزية';
-  const god = pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '';
+  const god = (pair === 'en|ar' && $('rep').checked ? ' ترجم كلمة God وما يشبهها (gods وgoddess وdeity) إلى «حاكم» (حكام، حاكمة) دائمًا، ولا تستخدم كلمة الله ولا إله.' : '') + glHint(pair);
   const sysN = 'أنت مترجم أدبي محترف. ستصلك كتل نصية مرقّمة بصيغة [رقم] ثم النص، مأخوذة من صفحة كتاب. ترجم كل كتلة ' + dirTxt + ' ترجمة دقيقة وسلسة، وبطول قريب من الأصل قدر الإمكان لأنها ستوضع في نفس المساحة. أعد كل كتلة بنفس رقمها بصيغة [رقم] ثم الترجمة، كل كتلة في فقرة مستقلة، دون دمج كتل ودون حذف ودون أي شرح أو مقدمة.' + god;
   const sys1 = 'أنت مترجم أدبي محترف. ترجم النص التالي ' + dirTxt + ' ترجمة دقيقة وسلسة وبطول قريب من الأصل. أعد الترجمة فقط بلا رقم ولا شرح.' + god;
   const mo = $('pmodel').value.trim() || undefined, wait = ms => new Promise(r => setTimeout(r, ms));
@@ -1968,7 +2278,7 @@ async function layoutAiFill(blocks, tr, pair, fin) {
 let trBlob = null;
 /* EPUB بنفس تصميم الأصل: يبقى الكتاب كما هو (صور وأنماط وفهرس) ويُستبدل نص كل فقرة بترجمتها، ويُترجم الكتاب كله بغض النظر عن نطاق الصفحات */
 async function trBuildEpubLayout() {
-  const pair = $('pdir').value, rtl = pair.endsWith('ar'), eng = $('peng').value, isAi = eng === 'ai', fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
+  const pair = $('pdir').value, rtl = pair.endsWith('ar'), eng = $('peng').value, isAi = eng === 'ai', fin = t => trFin(t, pair);
   const SEL = 'p,h1,h2,h3,h4,h5,h6,li,figcaption,td,th,dt,dd,blockquote,div', XNS = 'http://www.w3.org/XML/1998/namespace', wait = ms => new Promise(r => setTimeout(r, ms));
   let lastErr = ''; trStop = false; $('pgo').disabled = true;
   const pool = async (n, items, fn) => { let i = 0; await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length && !trStop) await fn(items[i++]); })); };
@@ -1994,7 +2304,7 @@ async function trBuildEpubLayout() {
     const all = []; D.forEach(x => x.blocks.forEach((_, k) => all.push([x, k]))); const tot = all.length;
     if (!tot) { $('pstat').textContent = 'لم أجد نصًا قابلًا للترجمة داخل الكتاب (قد يكون محميًا DRM).'; return toast('الملف بلا نص قابل للترجمة', 'err'); }
     const t0 = Date.now(), cnt = () => all.filter(([x, k]) => x.tr[k] != null).length;
-    const upd = () => { const n = cnt(), s = (Date.now() - t0) / 1000, left = n ? Math.round(s / n * (tot - n)) : 0; $('pbar').style.width = (n / tot * 100) + '%'; $('pstat').textContent = `ترجمة ${n} من ${tot} فقرة` + (n > 5 && n < tot ? ` · المتبقي ≈ ${left > 90 ? Math.ceil(left / 60) + ' دقيقة' : left + ' ث'}` : ''); };
+    const upd = () => { const n = cnt(), s = (Date.now() - t0) / 1000, left = n ? Math.round(s / n * (tot - n)) : 0; trBlkSave(); $('pbar').style.width = (n / tot * 100) + '%'; $('pstat').textContent = `ترجمة ${n} من ${tot} فقرة` + (n > 5 && n < tot ? ` · المتبقي ≈ ${left > 90 ? Math.ceil(left / 60) + ' دقيقة' : left + ' ث'}` : ''); };
     upd();
     /* 2) الترجمة: دفعات الذكاء الاصطناعي بالتوازي (5 في وقت واحد) أو الطريقة المختارة بتوازي أعلى */
     if (isAi) {
@@ -2038,24 +2348,86 @@ async function trBuildEpubLayout() {
     dl(await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip', compression: 'DEFLATE' }), trName + '-translated-layout.epub');
     toast(lost ? 'تم الحفظ، وبقيت بعض الفقرات بلا ترجمة' : 'تم حفظ EPUB بنفس تصميم الأصل', lost ? 'err' : undefined);
   } catch (e) { $('pstat').textContent = 'توقفت: ' + errMsg(e); toast('تعذر البناء: ' + errMsg(e), 'err'); }
-  finally { $('pgo').disabled = false; }
+  finally { trBlkSave(true); $('pgo').disabled = false; }
+}
+/* ---------- كشف الصور في صفحة PDF: صفحة كاملة حمراء مكتوب عليها «صورة» مكان كل صورة ---------- */
+async function trImgRects(p, vp) {
+  const O = pdfjsLib.OPS, U = pdfjsLib.Util, ol = await p.getOperatorList(), rects = [];
+  const imgOps = new Set([O.paintImageXObject, O.paintInlineImageXObject, O.paintImageMaskXObject, O.paintImageXObjectRepeat, O.paintJpegXObject].filter(v => v != null));
+  let m = vp.transform.slice(); const st = [];
+  for (let k = 0; k < ol.fnArray.length; k++) {
+    const f = ol.fnArray[k], a = ol.argsArray[k];
+    if (f === O.save) st.push(m.slice());
+    else if (f === O.restore) { if (st.length) m = st.pop(); }
+    else if (f === O.transform) m = U.transform(m, a);
+    else if (f === O.paintFormXObjectBegin) { st.push(m.slice()); if (a && a[0]) m = U.transform(m, a[0]); }
+    else if (f === O.paintFormXObjectEnd) { if (st.length) m = st.pop(); }
+    else if (imgOps.has(f)) {
+      const xs = [], ys = [];
+      for (const [x, y] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { xs.push(m[0] * x + m[2] * y + m[4]); ys.push(m[1] * x + m[3] * y + m[5]); }
+      rects.push({ x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) });
+    }
+  }
+  return rects;
+}
+/* full: الصفحة كلها صورة (تُستبدل بصفحة حمراء) · parts: صور داخل صفحة نص (تُمسح من الصفحة وتُضاف لها صفحة حمراء بعدها) */
+async function trImgPlan(p, vp, W, H, nBlocks) {
+  let rs = []; try { rs = await trImgRects(p, vp); } catch (e) {}
+  const A = W * H, ar = r => (r.x1 - r.x0) * (r.y1 - r.y0);
+  rs = rs.map(r => ({ x0: Math.max(0, r.x0), y0: Math.max(0, r.y0), x1: Math.min(W, r.x1), y1: Math.min(H, r.y1) })).filter(r => r.x1 > r.x0 && r.y1 > r.y0 && ar(r) >= A * .005);
+  for (let ch = true; ch;) {
+    ch = false;
+    for (let i = 0; i < rs.length && !ch; i++) for (let j = i + 1; j < rs.length && !ch; j++) {
+      const u = rs[i], v = rs[j];
+      if (u.x0 - 12 <= v.x1 && v.x0 - 12 <= u.x1 && u.y0 - 12 <= v.y1 && v.y0 - 12 <= u.y1) { rs[i] = { x0: Math.min(u.x0, v.x0), y0: Math.min(u.y0, v.y0), x1: Math.max(u.x1, v.x1), y1: Math.max(u.y1, v.y1) }; rs.splice(j, 1); ch = true; }
+    }
+  }
+  rs = rs.filter(r => ar(r) >= A * .04);
+  if (rs.some(r => ar(r) >= A * .6) && nBlocks <= 4) return { full: true, parts: [] };
+  return { full: false, parts: rs.filter(r => ar(r) < A * .6) };
+}
+let trPrintMode = false;
+function trPrintBlob(blob) {
+  const u = URL.createObjectURL(blob), f = document.createElement('iframe'); f.style.cssText = 'position:fixed;width:0;height:0;border:0;right:0;bottom:0';
+  f.onload = () => { setTimeout(() => { try { f.contentWindow.focus(); f.contentWindow.print(); } catch (e) { window.open(u, '_blank'); } }, 600); };
+  f.src = u; document.body.appendChild(f); setTimeout(() => { f.remove(); URL.revokeObjectURL(u); }, 600000);
+}
+async function trPrintLayout() {
+  if (trEpub) return toast('الطباعة بنفس الأسلوب لملفات PDF فقط، لـ EPUB استخدم زر التنزيل', 'err');
+  trPrintMode = true; try { await trBuildLayout(); } finally { trPrintMode = false; }
 }
 async function trBuildLayout() {
   if (trBlob && trEpub) return trBuildEpubLayout();
   if (!trDoc) return toast(trEpub ? 'أعد اختيار ملف EPUB الأصلي أولًا، فالترجمة المحفوظة لا تحمل تصميم الكتاب' : 'اختر ملف PDF الأصلي أولًا (أو أعد اختياره)، فالترجمة المحفوظة لا تحمل تصميم الصفحات', 'err');
-  const pair = $('pdir').value, rtl = pair.endsWith('ar'), srcRtl = pair.startsWith('ar'), fin = t => pair === 'en|ar' && $('rep').checked ? replaceTerms(t) : t;
+  const pair = $('pdir').value, rtl = pair.endsWith('ar'), srcRtl = pair.startsWith('ar'), fin = t => trFin(t, pair);
   const a = Math.max(1, +$('pfrom').value || 1), b = Math.min(trN, +$('pto').value || trN), fam = rtl ? 'Amiri, serif' : 'Georgia, serif';
   const out = await PDFLib.PDFDocument.create(); trStop = false; $('pgo').disabled = true;
+  const redOn = !$('imgReal').checked, redCache = {};
+  const redPage = async (w, h) => {
+    const k = w + 'x' + h;
+    if (!redCache[k]) {
+      const cv = document.createElement('canvas'); cv.width = Math.round(w * 2); cv.height = Math.round(h * 2); const x = cv.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, cv.width, cv.height);
+      x.fillStyle = '#2563eb'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.direction = rtl ? 'rtl' : 'ltr';
+      const word = (rtl ? 'صورة' : 'IMAGE'); let fs = cv.height * .4; x.font = `bold ${fs}px Amiri, serif`;
+      const mw = x.measureText(word).width; if (mw > cv.width * .9) { fs *= cv.width * .9 / mw; x.font = `bold ${fs}px Amiri, serif`; }
+      x.fillText(word, cv.width / 2, cv.height / 2);
+      const bl = await new Promise(r => cv.toBlob(r, 'image/jpeg', .9)); redCache[k] = await out.embedJpg(await bl.arrayBuffer()); cv.width = cv.height = 0;
+    }
+    out.addPage([w, h]).drawImage(redCache[k], { x: 0, y: 0, width: w, height: h });
+  };
   let totBlocks = 0, doneBlocks = 0, lost = 0, lastErr = '', fbDead = false;
   try {
-    try { await document.fonts.load('30px Amiri', 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي'); } catch (e) {}
+    try { await document.fonts.load('30px Amiri', 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي'); await document.fonts.load('bold 100px Amiri', 'صورة'); } catch (e) {}
     for (let i = a - 1; i < b && !trStop; i++) {
       $('pstat').textContent = `نسخة بنفس التصميم: صفحة ${i + 1} (${i - a + 2} من ${b - a + 1})`; $('pbar').style.width = ((i - a + 1) / (b - a + 1) * 100) + '%';
       const p = await trDoc.getPage(i + 1), vp = p.getViewport({ scale: 2 }), v1 = p.getViewport({ scale: 1 }), c = document.createElement('canvas'); c.width = vp.width; c.height = vp.height;
       const g = c.getContext('2d', { willReadFrequently: true }); await p.render({ canvasContext: g, viewport: vp }).promise;
       const tc = await p.getTextContent(), segs = [];
       for (const it of tc.items) { if (!it.str || !it.str.trim()) continue; const m = pdfjsLib.Util.transform(vp.transform, it.transform); segs.push({ s: it.str, x: m[4], y: m[5], h: Math.hypot(m[2], m[3]) || 10, w: it.width * 2 }); }
-      const blocks = layoutGroup(segs, srcRtl), key = trId + '|5|' + pair + '|' + i, tr = trBlk[key] || (trBlk[key] = []); let n = 0; totBlocks += blocks.length;
+      const blocks = layoutGroup(segs, srcRtl), plan = redOn ? await trImgPlan(p, vp, c.width, c.height, blocks.length) : { full: false, parts: [] };
+      if (plan.full) { await redPage(v1.width, v1.height); c.width = c.height = 0; continue; }
+      const key = trId + '|5|' + pair + '|' + i, tr = trBlk[key] || (trBlk[key] = []); let n = 0; totBlocks += blocks.length;
       if (blocks.some((_, k) => tr[k] == null)) {
         try { await layoutAiFill(blocks, tr, pair, fin); } catch (e) { lastErr = errMsg(e); }
         if (trStop) break;
@@ -2063,6 +2435,14 @@ async function trBuildLayout() {
           await Promise.all([0, 1, 2, 3].map(async () => { while (n < blocks.length && !trStop && !fbDead) { const k = n++; if (tr[k] != null) continue; try { tr[k] = fin(await textPart(blocks[k].text, pair, 'gt')); } catch (e) { fbDead = true; lastErr = lastErr || errMsg(e); } } }));
           if (trStop) break;
         }
+      }
+      trBlkSave();
+      for (const r of plan.parts) {
+        g.fillStyle = '#fff'; g.fillRect(r.x0, r.y0, r.x1 - r.x0, r.y1 - r.y0);
+        const word = (rtl ? 'صورة' : 'IMAGE'), rw = r.x1 - r.x0, rh = r.y1 - r.y0; let fz = rh * .5;
+        g.save(); g.fillStyle = '#2563eb'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.direction = rtl ? 'rtl' : 'ltr';
+        g.font = `bold ${fz}px Amiri, serif`; const mw = g.measureText(word).width; if (mw > rw * .9) { fz *= rw * .9 / mw; g.font = `bold ${fz}px Amiri, serif`; }
+        g.fillText(word, (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2); g.restore();
       }
       const bgs = blocks.map((B, k) => tr[k] == null ? null : layoutBg(g, c, B.x0 - 4, B.top - 3, B.x1 - B.x0 + 8, B.bot - B.top + 6));
       blocks.forEach((B, k) => {
@@ -2081,9 +2461,9 @@ async function trBuildLayout() {
     if (!totBlocks) { $('pstat').textContent = 'لا يوجد نص قابل للاستخراج في هذه الصفحات (ملف ممسوح كصور). هذه الميزة تحتاج PDF نصيًا.'; return toast('الملف بلا نص قابل للاستخراج', 'err'); }
     if (!doneBlocks) { $('pstat').textContent = 'تعذرت الترجمة: ' + (lastErr || 'لم يرجع الذكاء الاصطناعي ترجمة') + '. لم يُنزَّل ملف. أضف مفتاحك من زر الذكاء الاصطناعي أعلى الصفحة أو أعد المحاولة.'; return toast('تعذرت الترجمة', 'err'); }
     $('pbar').style.width = '100%'; $('pstat').textContent = 'اكتمل ✓' + (lost ? ` · ${lost} نص بقي بلغته الأصلية لتعذّر ترجمته${lastErr ? ' (' + lastErr + ')' : ''}، أعد الضغط لإكمالها` : '');
-    dl(new Blob([await out.save()], { type: 'application/pdf' }), trName + '-translated-layout.pdf'); toast(lost ? 'تم الحفظ، وبقيت بعض النصوص بلا ترجمة' : 'تم حفظ الملف بنفس تصميم الأصل', lost ? 'err' : undefined);
+    { const blob = new Blob([await out.save()], { type: 'application/pdf' }); if (trPrintMode) trPrintBlob(blob); else dl(blob, trName + '-translated-layout.pdf'); } toast(lost ? 'تم الحفظ، وبقيت بعض النصوص بلا ترجمة' : 'تم حفظ الملف بنفس تصميم الأصل', lost ? 'err' : undefined);
   } catch (e) { $('pstat').textContent = 'توقفت: ' + errMsg(e); toast('تعذر البناء: ' + errMsg(e), 'err'); }
-  finally { $('pgo').disabled = false; }
+  finally { trBlkSave(true); $('pgo').disabled = false; }
 }
 
 /* ---------- القراءة الصوتية بصوت الجهاز مع تتبّع الكلمات فوق صفحة PDF ---------- */
@@ -2240,8 +2620,145 @@ function godProtect(t) { const map = []; GOD_RULES.forEach(([re, ar]) => { t = t
 const godRestore = (t, map) => t.replace(/X\s*Q\s*Z\s*(\d+)\s*X/gi, (m, n) => map[n] || m);
 const godSub = t => { const p = godProtect(t); return godRestore(p.text, p.map); };
 /* زر تنقية الكلمات: الله / الإله / إله / آلهة (مع التشكيل والسوابق) ← حاكم */
-const TSH = '[\u064B-\u0652\u0670\u0640]*', R_ALLAH = new RegExp('(?<![\u0600-\u06FF])([وفبكت]?)(\u0627?)' + TSH + '\u0644' + TSH + '\u0644' + TSH + '\u0647' + TSH + '(?![\u0600-\u06FF])', 'g');
-const shirkClean = t => godSub(replaceTerms(t.replace(R_ALLAH, (m, p, a) => p + (a ? 'ال' : 'لل') + 'حاكم')));
+const TSH = '[\u064B-\u0652\u0670\u0640]*', R_ALLAH = new RegExp('(?<![\u0621-\u064A\u0671-\u06D3])(?<!عبد\\s)([وفبكت]?)(\u0627?)' + TSH + '\u0644' + TSH + '\u0644' + TSH + '\u0647' + TSH + '(?![\u0621-\u064A\u0671-\u06D3])', 'g');
+const shirkClean = t => godSub(replaceTerms(kufrClean(t).replace(R_ALLAH, (m, p, a) => p + (a ? 'ال' : 'لل') + 'حاكم')));
+/* ---------- قاموس الكلمات الكفرية: يُطبَّق ضمن كل أزرار «تنقية ← حاكم»، وتقدر تفعّل أي كلمة أو تعطّلها وتضيف كلماتك ----------
+   الأنماط: p = يقبل السوابق (و ف ب ك ل ال) واللواحق (ه ها هم ك كم نا ي) · al = يشترط «ال» · w = يقبل و/ف فقط · x = عبارة كما هي */
+const KUFR = [
+  ['الألوهية والربوبية', [
+    ['إلهي', 'سامي', 'al'], ['إلهية', 'سامية', 'p'],
+    ['إله', 'حاكم', 'p'], ['إلها', 'حاكمًا', 'w'], ['إلهة', 'حاكمة', 'p'], ['آلهة', 'حكام', 'p'], ['ألوهية', 'حاكمية', 'p'], ['ألوهة', 'حاكمية', 'p'], ['تأليه', 'تبجيل', 'p'],
+    ['رب العالمين', 'حاكم العالمين', 'w'], ['العلي القدير', 'الحاكم الأعلى', 'w'],
+    ['رب', 'حاكم', 'al'], ['ربنا', 'حاكمنا', 'w'], ['ربي', 'حاكمي', 'w'], ['ربك', 'حاكمك', 'w'], ['ربكم', 'حاكمكم', 'w'], ['ربه', 'حاكمه', 'w'], ['ربها', 'حاكمها', 'w'], ['ربهم', 'حاكمهم', 'w'],
+    ['خالق', 'حاكم', 'al'], ['رحمن', 'حاكم', 'al']
+  ]],
+  ['العبادة والتقديس لغير الله', [
+    ['يعبد', 'يبجّل', 'p'], ['يعبدون', 'يبجّلون', 'p'], ['تعبد', 'تبجّل', 'p'], ['نعبد', 'نبجّل', 'p'], ['أعبد', 'أبجّل', 'p'], ['عبادة', 'تبجيل', 'p'],
+    ['معبود', 'مبجَّل', 'p'], ['معبد', 'هيكل', 'p'], ['معابد', 'هياكل', 'p']
+  ]],
+  ['رموز ومؤسسات ديانات أخرى (اختيارية، معطّلة افتراضيًا)', [
+    ['كنيسة', 'قاعة', 'p', 1], ['كنائس', 'قاعات', 'p', 1], ['كاهن', 'حكيم', 'p', 1], ['كهنة', 'حكماء', 'p', 1], ['قسيس', 'معلّم', 'p', 1], ['راهب', 'ناسك', 'p', 1], ['راهبة', 'ناسكة', 'p', 1],
+    ['صليب', 'شعار', 'p', 1], ['الثالوث', 'الثلاثي', 'x', 1], ['قديس', 'فاضل', 'p', 1], ['قديسة', 'فاضلة', 'p', 1], ['ترنيمة', 'أنشودة', 'p', 1], ['تعميد', 'تكريس', 'p', 1]
+  ]]
+];
+const KL = '[\\u0621-\\u064A\\u0671-\\u06D3]', KT = '[\\u064B-\\u0652\\u0670\\u0640]*', kp = s => [...s].map(c => c + KT).join('');
+const KPRE = { p: '(?:' + kp('و') + '|' + kp('ف') + ')?(?:' + ['بال', 'كال', 'لل', 'ال', 'ب', 'ك', 'ل'].map(kp).join('|') + ')?', al: '(?:' + kp('و') + '|' + kp('ف') + ')?(?:' + ['بال', 'كال', 'لل', 'ال'].map(kp).join('|') + ')', w: '(?:' + kp('و') + '|' + kp('ف') + ')?', x: '' };
+const KSUF = ['ها', 'هما', 'هم', 'هن', 'ه', 'كم', 'ك', 'نا', 'ي'].map(kp).join('|');
+function kLetters(s, strict) {
+  return [...s].map((ch, i) => {
+    if (ch === ' ') return '\\s+';
+    if ('أإآا'.includes(ch)) {
+      if (i === 0 && strict) return (ch === 'ا' ? 'ا' : ch === 'آ' ? '(?:آ|(?<=ال)ا)' : /ة$/.test(s) ? '[إأ]' : '(?:[إأ]|(?<=ال)ا)') + KT;
+      return '[أإآا]' + KT;
+    }
+    if ('يى'.includes(ch)) return '[يى]' + KT;
+    if (ch === 'ة') return '[ةته]' + KT;
+    return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + KT;
+  }).join('');
+}
+const kRe = {};
+function kBuild(a, m) { return new RegExp('(?<!' + KL + ')(?<!عبد\\s)(' + KPRE[m] + ')(' + kLetters(a, m !== 'x') + ')' + (m === 'p' ? '(' + KSUF + ')?' : '()') + '(?!' + KL + ')', 'g'); }
+const kSt = () => { try { return JSON.parse(localStorage.getItem('bayan_kufr_st') || '{}') || {}; } catch (e) { return {}; } };
+const kCustom = () => { try { const a = JSON.parse(localStorage.getItem('bayan_kufr_my') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+function kAll() {
+  const st = kSt(), out = [];
+  KUFR.forEach(([cat, es]) => es.forEach(([a, b, m, opt]) => out.push({ a, b, m, cat, k: a + '|' + m, on: st[a + '|' + m] != null ? !!st[a + '|' + m] : !opt })));
+  kCustom().forEach(([a, b], i) => out.push({ a, b, m: 'p', cat: 'كلماتي', k: 'my:' + a, my: i, on: st['my:' + a] != null ? !!st['my:' + a] : true }));
+  return out;
+}
+let kufrN = 0;
+function kufrClean(t) {
+  let n = 0;
+  for (const e of kAll()) {
+    if (!e.on || !String(e.a).trim()) continue;
+    const key = e.m + '|' + e.a, re = kRe[key] || (kRe[key] = kBuild(e.a, e.m)); re.lastIndex = 0;
+    t = t.replace(re, (m, pre, body, suf) => { n++; suf = suf || ''; return pre + (suf && /ة$/.test(e.b) ? e.b.slice(0, -1) + 'ت' : e.b) + suf; });
+  }
+  kufrN = n; return t;
+}
+function kufrOpen() { $('kufrModal').classList.remove('hidden'); kufrRender(); }
+function kufrClose() { $('kufrModal').classList.add('hidden'); }
+function kufrRender() {
+  const q = ($('kfQ').value || '').trim(), all = kAll(), shown = q ? all.filter(e => (e.a + ' ' + e.b).includes(q)) : all, cats = [];
+  shown.forEach(e => { if (!cats.includes(e.cat)) cats.push(e.cat); });
+  $('kfCnt').textContent = all.length + ' كلمة، المفعّل منها ' + all.filter(e => e.on).length;
+  $('kfList').innerHTML = cats.length ? cats.map(c => '<div class="space-y-1"><b class="text-orange-400">' + esc(c) + '</b>' + shown.filter(e => e.cat === c).map(e => '<label class="flex items-center gap-2 rounded-lg border border-slate-800 px-2 py-1.5"><input type="checkbox" class="accent-orange-600" data-k="' + esc(e.k) + '"' + (e.on ? ' checked' : '') + '><span class="amiri text-base flex-1">' + esc(e.a) + ' <span class="text-slate-500">←</span> ' + (e.b ? esc(e.b) : '<span class="text-slate-500">(حذف)</span>') + '</span>' + (e.my != null ? '<button class="btn !py-0.5" data-del="' + e.my + '" aria-label="حذف">✕</button>' : '') + '</label>').join('') + '</div>').join('') : '<p class="text-slate-500">لا نتائج</p>';
+}
+$('kfList').addEventListener('change', e => { const k = e.target.dataset && e.target.dataset.k; if (!k) return; const st = kSt(); st[k] = e.target.checked ? 1 : 0; lsSet('bayan_kufr_st', JSON.stringify(st)); kufrRender(); });
+$('kfList').addEventListener('click', e => { const b = e.target.closest('[data-del]'); if (!b) return; e.preventDefault(); const a = kCustom(); a.splice(+b.dataset.del, 1); lsSet('bayan_kufr_my', JSON.stringify(a)); kufrRender(); });
+function kufrAdd() {
+  const a = $('kfA').value.trim(), b = $('kfB').value.trim(); if (!a) return toast('اكتب الكلمة أولًا', 'err');
+  const m = kCustom(); if (m.some(x => x[0] === a)) return toast('الكلمة مضافة مسبقًا', 'err');
+  m.push([a, b]); lsSet('bayan_kufr_my', JSON.stringify(m)); $('kfA').value = ''; $('kfB').value = ''; kufrRender(); toast('أُضيفت الكلمة إلى قاموسك');
+}
+function kufrAll(v) { const st = {}; kAll().forEach(e => { st[e.k] = v ? 1 : 0; }); lsSet('bayan_kufr_st', JSON.stringify(st)); kufrRender(); }
+
+/* ---------- قاموس المترجم + تنقية وتعريب تلقائي بعد الترجمة ---------- */
+const GL_K = 'bayan_trgl', hasLat = x => /[A-Za-z]/.test(x);
+const glGet = () => { try { const a = JSON.parse(localStorage.getItem(GL_K) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+let glCache = null, glSig = null;
+function glRules() {
+  const raw = localStorage.getItem(GL_K) || '[]'; if (glCache && glSig === raw) return glCache; glSig = raw;
+  return glCache = glGet().filter(e => e[0] && String(e[0]).trim()).sort((x, y) => y[0].length - x[0].length).map(([a, b]) => {
+    a = String(a).trim(); b = String(b || '').trim();
+    return hasLat(a) ? [new RegExp('(?<![A-Za-z0-9])' + a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+') + "(?:['’]s)?(?![A-Za-z0-9])", 'gi'), b, 1] : [kBuild(a, 'p'), b, 0];
+  });
+}
+const glFix = t => { glRules().forEach(([re, b, lat]) => { t = lat ? t.replace(re, () => b) : t.replace(re, (m, pre, body, suf) => pre + b + (suf || '')); }); return t; };
+const glHint = pair => {
+  if (pair !== 'en|ar') return '';
+  const g = glGet().filter(e => e[0] && e[1] && hasLat(e[0])).slice(0, 80), a = $('autoArab');
+  return (g.length ? ' التزم بهذه الترجمات حرفيًا: ' + g.map(e => e[0] + ' = ' + e[1]).join('، ') + '.' : '') + (a && a.checked ? ' اكتب أسماء الأشخاص والأماكن والمصطلحات الخاصة بحروف عربية نطقًا، ولا تتركها بحروف لاتينية.' : '');
+};
+/* تعريب بالنطق: Asura ← أسورا */
+const AR_DG = [['sh', 'ش'], ['ch', 'تش'], ['th', 'ث'], ['ph', 'ف'], ['kh', 'خ'], ['gh', 'غ'], ['ck', 'ك'], ['qu', 'كو'], ['ng', 'نغ'], ['ee', 'ي'], ['oo', 'و'], ['ou', 'و'], ['ea', 'ي'], ['ai', 'اي'], ['ay', 'اي'], ['ei', 'اي'], ['au', 'و'], ['aw', 'و'], ['oa', 'و'], ['ow', 'او'], ['oi', 'وي'], ['ae', 'ي'], ['ie', 'ي'], ['ue', 'و'], ['ui', 'وي']];
+function arabWord(w) {
+  w = w.toLowerCase().replace(/['’]s$/, '').replace(/['’]/g, ''); const n = w.length, isV = c => !!c && 'aeiouy'.includes(c); let o = '', i = 0;
+  while (i < n) {
+    const c = w[i], p = w[i - 1], nx = w[i + 1], d = AR_DG.find(x => x[0] === w.substr(i, 2));
+    if (d) { o += d[1]; i += 2; continue; }
+    if (c === nx && !isV(c)) { i++; continue; }
+    if ('aeiou'.includes(c)) {
+      if (c === 'e' && i === n - 1 && n > 3 && !isV(p)) { i++; continue; }
+      o += i === 0 ? { a: 'أ', e: 'إ', i: 'إ', o: 'أو', u: 'أو' }[c] : c === 'e' ? (i === n - 1 || (!isV(nx) && isV(w[i + 2])) ? 'ي' : '') : { a: 'ا', i: 'ي', o: 'و', u: 'و' }[c];
+    } else o += { b: 'ب', c: /[eiy]/.test(nx || '') ? 'س' : 'ك', d: 'د', f: 'ف', g: /[eiy]/.test(nx || '') ? 'ج' : 'غ', h: 'ه', j: 'ج', k: 'ك', l: 'ل', m: 'م', n: 'ن', p: 'ب', q: 'ق', r: 'ر', s: 'س', t: 'ت', v: 'ف', w: 'و', x: 'كس', y: 'ي', z: 'ز' }[c] || '';
+    i++;
+  }
+  return o;
+}
+function arabize(t) {
+  if ((t.match(/[\u0621-\u064A]/g) || []).length < (t.match(/[A-Za-z]/g) || []).length) return t; /* نص أجنبي أو ترجمة فاشلة: لا تلمسه */
+  return t.replace(/(?<![A-Za-z0-9_@])[A-Za-z][A-Za-z'’]*(?:-[A-Za-z]+)*(?![A-Za-z0-9_@])/g, w => {
+    const core = w.replace(/['’]s$/i, ''); if (core.length < 2 || /^(https?|www|com|org|net)$/i.test(core) || (core === core.toUpperCase() && core.length <= 3)) return w;
+    return core.split('-').map(arabWord).join('-');
+  });
+}
+/* يُطبَّق تلقائيًا على كل صفحة/فقرة مترجمة إلى العربية */
+const trFin = (t, pair) => {
+  if (pair !== 'en|ar' || !t) return t;
+  if ($('rep').checked) t = replaceTerms(t);
+  if ($('autoPurge').checked) t = shirkClean(t);
+  t = glFix(t);
+  return $('autoArab').checked ? arabize(t) : t;
+};
+function trRefix() {
+  if (!trN) return toast('لا توجد ترجمة بعد', 'err'); const pair = $('pdir').value; let n = 0;
+  for (let i = 0; i < trN; i++) { const v = trOut[i]; if (!v) continue; const r = trFin(v, pair); if (r !== v) { trOut[i] = r; n++; } }
+  trPdf = null; trShow(); trSaveSoon(); toast(n ? 'تم التطبيق في ' + n + ' صفحة' : 'لا توجد تغييرات', n ? undefined : 'err');
+}
+function glOpen() { $('glModal').classList.remove('hidden'); glRender(); }
+function glClose() { $('glModal').classList.add('hidden'); }
+function glRender() {
+  const a = glGet(); $('glCnt').textContent = a.length + ' كلمة';
+  $('glList').innerHTML = a.length ? a.map((e, i) => '<div class="flex items-center gap-2 rounded-lg border border-slate-800 px-2 py-1.5"><span class="amiri text-base flex-1" dir="auto">' + esc(e[0]) + ' <span class="text-slate-500">←</span> ' + (e[1] ? esc(e[1]) : '<span class="text-slate-500">(حذف)</span>') + '</span><button class="btn !py-0.5" data-gd="' + i + '" aria-label="حذف">✕</button></div>').join('') : '<p class="text-slate-500">القاموس فارغ. مثال: Asura ← أسورا</p>';
+}
+$('glList').addEventListener('click', e => { const b = e.target.closest('[data-gd]'); if (!b) return; const a = glGet(); a.splice(+b.dataset.gd, 1); lsSet(GL_K, JSON.stringify(a)); glRender(); });
+function glAdd() {
+  const a = $('glA').value.trim(), b = $('glB').value.trim(); if (!a) return toast('اكتب الكلمة أولًا', 'err');
+  const m = glGet().filter(x => String(x[0]).toLowerCase() !== a.toLowerCase()); m.push([a, b]); lsSet(GL_K, JSON.stringify(m));
+  $('glA').value = ''; $('glB').value = ''; glRender(); toast('أُضيفت الكلمة إلى قاموس المترجم');
+}
+
 function trPurge(all) {
   if (!trN) return toast('لا توجد ترجمة بعد', 'err');
   let n = 0; const one = i => { const v = trOut[i]; if (!v) return; const r = shirkClean(v); if (r !== v) { trOut[i] = r; n++; } };
@@ -2615,7 +3132,7 @@ async function aiFix(mode) {
   finally { fixBusy = false; }
 }
 function exportTxt() {
-  saveCh(); const t = `${$('nTitle').value}\nبقلم: ${$('nAuthor').value}\n\n` + chapters.map(c => c.title + '\n\n' + c.content).join('\n\n❦ ❦ ❦\n\n');
+  saveCh(); const t = `${$('nTitle').value}\nبقلم: ${$('nAuthor').value}\n\n` + chapters.map(c => c.title + '\n\n' + (c.content || '').replace(/^\[\[صورة:\w+\]\]$/gm, '[ صورة ]')).join('\n\n❦ ❦ ❦\n\n');
   dl(new Blob([t], { type: 'text/plain;charset=utf-8' }), ($('nTitle').value || 'novel') + '.txt');
 }
 
@@ -2713,23 +3230,77 @@ function sprint() {
   }, 1000); chB.focus();
 }
 const xe = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const parasHtml = t => t.split('\n').map(l => l.trim()).filter(Boolean).map(l => /^(❦\s*){3}$/.test(l) ? '<p class="sep">❦ ❦ ❦</p>' : '<p>' + xe(l) + '</p>').join('\n');
+/* ---------- صور الفصل: تُدرج كعلامة [[صورة:ID]] في النص، وتُطبع في صفحة كاملة مستقلة عند التصدير ---------- */
+const IMG_RE = /^\[\[صورة:(\w+)\]\]$/, imgMark = id => '[[صورة:' + id + ']]', imgTok = l => { const m = IMG_RE.exec(String(l).trim()); return m ? m[1] : null; };
+function imgFit(m, maxW, maxH) { let w = Math.min(maxW, m.w), h = w * m.h / m.w; if (h > maxH) { h = maxH; w = h * m.w / m.h; } return [Math.round(w), Math.round(h)]; }
+function parasHtml(t, imgs, src) {
+  return t.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const id = imgTok(l);
+    if (id) {
+      const m = imgs && imgs[id]; if (!m || !src) return '';
+      if (src.doc) { const [w, h] = imgFit(m, 600, 820); return `<p style="page-break-before:always;page-break-after:always;text-align:center;text-indent:0"><img src="${m.d}" width="${w}" height="${h}"/></p>`; }
+      return `<div class="im"><img src="${src(id)}" alt=""/></div>`;
+    }
+    return /^(❦\s*){3}$/.test(l) ? '<p class="sep">❦ ❦ ❦</p>' : '<p>' + xe(l) + '</p>';
+  }).filter(Boolean).join('\n');
+}
+function imgCompress(file) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 1300 / Math.max(im.width, im.height)), w = Math.max(1, Math.round(im.width * k)), h = Math.max(1, Math.round(im.height * k)), c = document.createElement('canvas');
+      c.width = w; c.height = h; const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); g.drawImage(im, 0, 0, w, h); URL.revokeObjectURL(u);
+      res({ d: c.toDataURL('image/jpeg', .78), w, h });
+    };
+    im.onerror = () => { URL.revokeObjectURL(u); rej(new Error('تعذرت قراءة الصورة')); };
+    im.src = u;
+  });
+}
+function imgInsert(id) {
+  const t = $('chBody'), v = t.value, a = t.selectionStart, e = t.selectionEnd, b = v.slice(0, a), n = v.slice(e);
+  const pre = !b ? '' : b.endsWith('\n\n') ? '' : b.endsWith('\n') ? '\n' : '\n\n', post = n.startsWith('\n\n') ? '' : n.startsWith('\n') ? '\n' : '\n\n';
+  snapSave(true); t.setRangeText(pre + imgMark(id) + post, a, e, 'end'); t.focus(); saveCh(); stats(); autoSave();
+}
+async function imgPick(ev) {
+  const f = ev.target.files[0]; ev.target.value = ''; if (!f) return;
+  if (!/^image\//.test(f.type)) return toast('اختر ملف صورة', 'err');
+  try {
+    saveCh(); const c = chapters.find(x => x.id === active); if (!c) return;
+    const m = await imgCompress(f), id = 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    (c.imgs = c.imgs || {})[id] = m; imgInsert(id); imgRender();
+    const tot = chapters.reduce((a, x) => a + Object.values(x.imgs || {}).reduce((s, y) => s + y.d.length, 0), 0);
+    if (tot > 3.5e6) toast('أُدرجت الصورة، لكن حجم صور الرواية كبير وقد يتعذر حفظها على هذا الجهاز. نزّل نسخة احتياطية', 'err'); else toast('أُدرجت الصورة في موضع المؤشر، وستُطبع في صفحة مستقلة');
+  } catch (x) { toast('تعذر إدراج الصورة: ' + errMsg(x), 'err'); }
+}
+function imgRender() {
+  const b = $('chImgs'); if (!b) return; const c = chapters.find(x => x.id === active), ids = c && c.imgs ? Object.keys(c.imgs) : [];
+  if (!ids.length) { b.classList.add('hidden'); b.innerHTML = ''; return; }
+  b.classList.remove('hidden');
+  b.innerHTML = '<b>صور هذا الفصل (كل صورة تُطبع في صفحة كاملة مستقلة، وموضعها العلامة [[صورة:...]] في النص)</b><div class="flex flex-wrap gap-2">' + ids.map(id => `<div class="rounded-xl border border-slate-800 p-1.5 flex items-center gap-2"><img src="${c.imgs[id].d}" class="w-12 h-12 object-cover rounded-lg" alt=""><button class="btn !py-1" onclick="imgInsert('${id}')">إدراج عند المؤشر</button><button class="btn !py-1 !text-rose-400" onclick="imgDel('${id}')" aria-label="حذف الصورة"><i class="fa-solid fa-trash-can"></i></button></div>`).join('') + '</div>';
+}
+function imgDel(id) {
+  if (!confirm('حذف هذه الصورة من الفصل؟')) return; saveCh(); const c = chapters.find(x => x.id === active); if (!c || !c.imgs) return;
+  snapSave(true); $('chBody').value = $('chBody').value.split('\n').filter(l => imgTok(l) !== id).join('\n'); delete c.imgs[id]; if (!Object.keys(c.imgs).length) delete c.imgs;
+  saveCh(); stats(); autoSave(); imgRender();
+}
 async function exportEpub() {
   saveCh(); if (typeof JSZip === 'undefined') return toast('تعذر تحميل أداة EPUB، تحقق من الاتصال', 'err');
   const title = $('nTitle').value || 'رواية', author = $('nAuthor').value || 'مؤلف', uid = 'bayan-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), z = new JSZip();
   const xh = (t, b) => `<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ar" lang="ar" dir="rtl"><head><meta charset="utf-8"/><title>${xe(t)}</title><link rel="stylesheet" type="text/css" href="style.css"/></head><body>${b}</body></html>`;
   z.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
   z.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-  z.file('OEBPS/style.css', 'body{direction:rtl;text-align:justify;line-height:1.9;font-family:serif;margin:0 4%}h1{text-align:center;margin:2em 0 1em;font-size:1.5em}p{margin:0 0 .5em;text-indent:1.2em}p.sep{text-align:center;text-indent:0;margin:1.2em 0}.t{text-align:center;margin-top:30%}.t h1{font-size:2em}.t p{text-indent:0;text-align:center}');
+  const usedImgs = new Set(), allImgs = Object.assign({}, ...chapters.map(c => c.imgs || {}));
+  z.file('OEBPS/style.css', 'body{direction:rtl;text-align:justify;line-height:1.9;font-family:serif;margin:0 4%}h1{text-align:center;margin:2em 0 1em;font-size:1.5em}p{margin:0 0 .5em;text-indent:1.2em}p.sep{text-align:center;text-indent:0;margin:1.2em 0}.t{text-align:center;margin-top:30%}.t h1{font-size:2em}.t p{text-indent:0;text-align:center}.im{page-break-before:always;page-break-after:always;text-align:center;margin:0}.im img{max-width:100%;max-height:92vh}');
   z.file('OEBPS/title.xhtml', xh(title, `<div class="t"><h1>${xe(title)}</h1><p>بقلم: ${xe(author)}</p>${$('nGenre').value ? '<p>' + xe($('nGenre').value) + '</p>' : ''}</div>`));
-  chapters.forEach((c, i) => z.file(`OEBPS/ch${i + 1}.xhtml`, xh(c.title, `<h1>${xe(c.title)}</h1>\n${parasHtml(c.content)}`)));
+  chapters.forEach((c, i) => z.file(`OEBPS/ch${i + 1}.xhtml`, xh(c.title, `<h1>${xe(c.title)}</h1>\n${parasHtml(c.content, c.imgs, id => { usedImgs.add(id); return 'img/' + id + '.jpg'; })}`)));
+  usedImgs.forEach(id => z.file('OEBPS/img/' + id + '.jpg', allImgs[id].d.split(',')[1], { base64: true }));
   z.file('OEBPS/nav.xhtml', xh('الفهرس', `<nav epub:type="toc" id="toc"><h1>الفهرس</h1><ol>${chapters.map((c, i) => `<li><a href="ch${i + 1}.xhtml">${xe(c.title)}</a></li>`).join('')}</ol></nav>`));
-  z.file('OEBPS/content.opf', `<?xml version="1.0" encoding="utf-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="ar"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${uid}</dc:identifier><dc:title>${xe(title)}</dc:title><dc:creator>${xe(author)}</dc:creator><dc:language>ar</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="css" href="style.css" media-type="text/css"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/>${chapters.map((c, i) => `<item id="c${i + 1}" href="ch${i + 1}.xhtml" media-type="application/xhtml+xml"/>`).join('')}</manifest><spine page-progression-direction="rtl"><itemref idref="title"/>${chapters.map((c, i) => `<itemref idref="c${i + 1}"/>`).join('')}</spine></package>`);
+  z.file('OEBPS/content.opf', `<?xml version="1.0" encoding="utf-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid" xml:lang="ar"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${uid}</dc:identifier><dc:title>${xe(title)}</dc:title><dc:creator>${xe(author)}</dc:creator><dc:language>ar</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z$/, 'Z')}</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="css" href="style.css" media-type="text/css"/><item id="title" href="title.xhtml" media-type="application/xhtml+xml"/>${[...usedImgs].map(id => `<item id="im_${id}" href="img/${id}.jpg" media-type="image/jpeg"/>`).join('')}${chapters.map((c, i) => `<item id="c${i + 1}" href="ch${i + 1}.xhtml" media-type="application/xhtml+xml"/>`).join('')}</manifest><spine page-progression-direction="rtl"><itemref idref="title"/>${chapters.map((c, i) => `<itemref idref="c${i + 1}"/>`).join('')}</spine></package>`);
   try { dl(await z.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }), title + '.epub'); toast('تم تصدير الرواية EPUB'); } catch (e) { toast('تعذر التصدير: ' + errMsg(e), 'err'); }
 }
 function exportDoc() {
   saveCh(); const title = $('nTitle').value || 'رواية';
-  const h = `<html dir="rtl" lang="ar"><head><meta charset="utf-8"><style>body{font-family:Amiri,'Traditional Arabic',serif;font-size:16pt;direction:rtl;text-align:justify;line-height:1.8}h1{text-align:center;page-break-before:always}p{margin:0 0 6pt;text-indent:18pt}p.sep{text-align:center;text-indent:0}</style></head><body><h1 style="page-break-before:avoid;font-size:30pt;margin-top:120pt">${xe(title)}</h1><p style="text-align:center;text-indent:0">بقلم: ${xe($('nAuthor').value)}</p>${chapters.map(c => `<h1>${xe(c.title)}</h1>${parasHtml(c.content)}`).join('')}</body></html>`;
+  const h = `<html dir="rtl" lang="ar"><head><meta charset="utf-8"><style>body{font-family:Amiri,'Traditional Arabic',serif;font-size:16pt;direction:rtl;text-align:justify;line-height:1.8}h1{text-align:center;page-break-before:always}p{margin:0 0 6pt;text-indent:18pt}p.sep{text-align:center;text-indent:0}</style></head><body><h1 style="page-break-before:avoid;font-size:30pt;margin-top:120pt">${xe(title)}</h1><p style="text-align:center;text-indent:0">بقلم: ${xe($('nAuthor').value)}</p>${chapters.map(c => `<h1>${xe(c.title)}</h1>${parasHtml(c.content, c.imgs, Object.assign(() => '', { doc: 1 }))}`).join('')}</body></html>`;
   dl(new Blob(['\uFEFF' + h], { type: 'application/msword' }), title + '.doc'); toast('تم تصدير الرواية Word');
 }
 function bkExport() { dl(new Blob([JSON.stringify(snapshot(), null, 1)], { type: 'application/json' }), ($('nTitle').value || 'novel') + '-backup.json'); toast('تم حفظ نسخة احتياطية كاملة'); }
@@ -2888,7 +3459,7 @@ function tbSel(k, tog) {
   const cur = (document.querySelector('[data-tbk].on') || {}).dataset; if (tog && cur && cur.tbk === k) k = '';
   document.querySelectorAll('[data-tbp]').forEach(p => p.classList.toggle('hidden', p.dataset.tbp !== k));
   document.querySelectorAll('[data-tbk]').forEach(b => { const on = b.dataset.tbk === k; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-  lsSet('bayan_tb', k);
+  lsSet('bayan_tb', k); if (k === 'fmt' && typeof wheelLay === 'function') wheelLay();
 }
 { const wide = matchMedia('(min-width:1024px)').matches; const sv = localStorage.getItem('bayan_tb'); tbSel(sv != null ? sv : (wide ? 'fmt' : '')); if (wide) document.querySelectorAll('details[data-dopen]').forEach(d => { d.open = true; }); }
 addEventListener('pagehide', () => { try { save(false, true); } catch (e) {} });
@@ -2896,6 +3467,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) { try
 addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   const open = id => !$(id).classList.contains('hidden');
+  if (open('kufrModal')) return kufrClose();
   if (open('privModal')) return closePriv();
   if (open('recModal')) return recClose();
   if (open('wfx')) return $('wfx').classList.add('hidden');
